@@ -109,10 +109,16 @@ steps:
     displayName: 'Test install from source distribution'
     condition: and(succeeded(), eq(${{ parameters.sdist }}, 'true'))
 
+  - powershell: |
+      $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Git\\usr\\bin*' }) -join ';'
+      Write-Host "PATH sanitized for MSVC linker"
+    displayName: 'Remove Git for Windows from PATH'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
   - bash: |
       # Build universal2 wheels on macOS, regular wheels elsewhere
       if [ "$(uname)" = "Darwin" ]; then
-        export MACOSX_DEPLOYMENT_TARGET=11.0
+        export MACOSX_DEPLOYMENT_TARGET=13.0
         export ARCHFLAGS="-arch x86_64 -arch arm64"
         export CFLAGS="-arch x86_64 -arch arm64"
         "$(pybin)" -m pip -vvv wheel . -w wheelhouse/
@@ -177,3 +183,4 @@ steps:
     inputs:
       targetPath: 'dist'
       artifactName: '$(Agent.JobName) $(python.architecture)'
+
