@@ -109,9 +109,10 @@ steps:
     displayName: 'Test install from source distribution'
     condition: and(succeeded(), eq(${{ parameters.sdist }}, 'true'))
 
-  - script: |
+  - bash: |
       # Build universal2 wheels on macOS, regular wheels elsewhere
       if [ "$(uname)" = "Darwin" ]; then
+        export MACOSX_DEPLOYMENT_TARGET=11.0
         export ARCHFLAGS="-arch x86_64 -arch arm64"
         export CFLAGS="-arch x86_64 -arch arm64"
         "$(pybin)" -m pip -vvv wheel . -w wheelhouse/
