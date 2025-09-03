@@ -110,7 +110,14 @@ steps:
     condition: and(succeeded(), eq(${{ parameters.sdist }}, 'true'))
 
   - script: |
-      "$(pybin)" -m pip -vvv wheel . -w wheelhouse/
+      # Build universal2 wheels on macOS, regular wheels elsewhere
+      if [ "$(uname)" = "Darwin" ]; then
+        export ARCHFLAGS="-arch x86_64 -arch arm64"
+        export CFLAGS="-arch x86_64 -arch arm64"
+        "$(pybin)" -m pip -vvv wheel . -w wheelhouse/
+      else
+        "$(pybin)" -m pip -vvv wheel . -w wheelhouse/
+      fi
     displayName: 'Build wheels'
     condition: and(succeeded(), ne(${{ parameters.sdist }}, 'true'))
 
