@@ -52,7 +52,7 @@ jobs:
   python-sdist:
     runs-on: ubuntu-latest
     env:
-      python.version: '3.8'
+      python.version: '3.12'
       sdist: true
     steps:
       - uses: actions/checkout@v4
@@ -73,8 +73,6 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PYBIN=/opt/python/cp38-cp38/bin/python ;;
-            3.9) PYBIN=/opt/python/cp39-cp39/bin/python ;;
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
             3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
             3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
@@ -86,8 +84,6 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
-            3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
             3.11) PY_FULL_VERSION=3.11.6; MACOS_VERSION=11 ;;
             3.12) PY_FULL_VERSION=3.12.0; MACOS_VERSION=11 ;;
@@ -204,7 +200,7 @@ jobs:
       manylinux: true
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
       # Python build steps identical to python-sdist (inlined for direct translation)
@@ -227,8 +223,6 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PYBIN=/opt/python/cp38-cp38/bin/python3 ;;
-            3.9) PYBIN=/opt/python/cp39-cp39/bin/python3 ;;
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python3 ;;
             3.11) PYBIN=/opt/python/cp311-cp311/bin/python3 ;;
             3.12) PYBIN=/opt/python/cp312-cp312/bin/python3 ;;
@@ -240,8 +234,6 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
-            3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
             3.11) PY_FULL_VERSION=3.11.6; MACOS_VERSION=11 ;;
             3.12) PY_FULL_VERSION=3.12.0; MACOS_VERSION=11 ;;
@@ -355,7 +347,7 @@ jobs:
     runs-on: windows-2022
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.10']
     steps:
       - uses: actions/checkout@v4
       # Python build steps identical to python-sdist (inlined)
@@ -375,21 +367,19 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PYBIN=/opt/python/cp38-cp38/bin/python3 ;;
-            3.9) PYBIN=/opt/python/cp39-cp39/bin/python3 ;;
-            3.10) PYBIN=/opt/python/cp310-cp310/bin/python3 ;;
-            3.11) PYBIN=/opt/python/cp311-cp311/bin/python3 ;;
-            3.12) PYBIN=/opt/python/cp312-cp312/bin/python3 ;;
+            3.10) PYVER=cp310-cp310 ;;
+            3.11) PYVER=cp311-cp311 ;;
+            3.12) PYVER=cp312-cp312 ;;
           esac
+          PYBIN=/opt/python/$PYVER/bin/python3
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
+          echo "/opt/python/$PYVER/bin" >> $GITHUB_PATH
       - name: Install & Choose Python for Mac
         if: runner.os == 'macOS' && env.manylinux != 'true'
         shell: bash
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
-            3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
             3.11) PY_FULL_VERSION=3.11.6; MACOS_VERSION=11 ;;
             3.12) PY_FULL_VERSION=3.12.0; MACOS_VERSION=11 ;;
@@ -505,7 +495,7 @@ jobs:
       SYSTEM_VERSION_COMPAT: 0
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
       # Python build steps identical to python-sdist (inlined)
@@ -528,8 +518,6 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PYBIN=/opt/python/cp38-cp38/bin/python ;;
-            3.9) PYBIN=/opt/python/cp39-cp39/bin/python ;;
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
             3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
             3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
@@ -541,8 +529,6 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
-            3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
             3.11) PY_FULL_VERSION=3.11.6; MACOS_VERSION=11 ;;
             3.12) PY_FULL_VERSION=3.12.0; MACOS_VERSION=11 ;;
