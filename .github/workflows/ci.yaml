@@ -63,10 +63,6 @@ jobs:
           architecture: ${{ env.python.architecture }}
       - name: Choose default Python binary
         run: echo "PYBIN=python" >> $GITHUB_ENV
-      - name: Configure Visual Studio (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64'
       - name: Choose Python for manylinux
         if: env.manylinux == 'true'
         shell: bash
@@ -77,23 +73,6 @@ jobs:
             3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
             3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
           esac
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
-      - name: Install & Choose Python for Mac
-        if: runner.os == 'macOS' && env.manylinux != 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
-            3.11) PY_FULL_VERSION=3.11.6; MACOS_VERSION=11 ;;
-            3.12) PY_FULL_VERSION=3.12.0; MACOS_VERSION=11 ;;
-          esac
-          INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
-          curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
-          sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
-          curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         run: |
@@ -121,13 +100,6 @@ jobs:
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Install Rust (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          set -e
-          curl -sSf -o rustup-init.exe https://win.rustup.rs
-          rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
-          echo "%USERPROFILE%\.cargo\bin" >> $GITHUB_PATH
       - name: Install rustfmt
         run: rustup component add rustfmt
       - name: Query Rust and Cargo versions
@@ -140,48 +112,6 @@ jobs:
         if: env.sdist == 'true'
         run: |
           "$PYBIN" -m pip -vvv install --user dist/*
-      - name: Build wheels
-        if: env.sdist != 'true'
-        run: |
-          "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
-      - name: auditwheel repair (manylinux)
-        if: env.manylinux == 'true' && env.sdist != 'true'
-        run: |
-          set -e -x
-          for whl in wheelhouse/${{ env.package_name }}-*.whl; do
-            auditwheel repair "$whl" -w wheelhouse/
-          done
-          ls -lh wheelhouse/
-      - name: Delocate wheels (macOS)
-        if: runner.os == 'macOS' && env.sdist != 'true'
-        run: |
-          set -e -x
-          "$PYBIN" -m pip install --user delocate
-          delocate-wheel --version
-          delocate-wheel wheelhouse/${{ env.package_name }}-*.whl
-          ls -lh wheelhouse/
-      - name: Test installing wheels and run examples
-        if: env.sdist != 'true'
-        run: |
-          set -e -x
-          ls -lh wheelhouse/
-          "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          "$PYBIN" -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
-          cd examples
-          "$PYBIN" run_py.py
-          "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
-      - name: Prepare wheels for publish
-        if: env.sdist != 'true' && env.manylinux != 'true'
-        run: |
-          set -e -x
-          mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*.whl dist/
-      - name: Prepare wheels for publish (manylinux)
-        if: env.sdist != 'true' && env.manylinux == 'true'
-        run: |
-          set -e -x
-          mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*manylinux*.whl dist/
       - name: Check artifacts with twine
         run: |
           set -e -x
@@ -213,10 +143,6 @@ jobs:
       - name: Choose default Python binary
         if: env.manylinux != 'true'
         run: echo "PYBIN=python" >> $GITHUB_ENV
-      - name: Configure Visual Studio (Windows)
-        if: runner.os == 'Windows' && env.manylinux != 'true'
-        shell: cmd
-        run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64'
       - name: Choose Python for manylinux
         if: env.manylinux == 'true'
         shell: bash
@@ -227,23 +153,6 @@ jobs:
             3.11) PYBIN=/opt/python/cp311-cp311/bin/python3 ;;
             3.12) PYBIN=/opt/python/cp312-cp312/bin/python3 ;;
           esac
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
-      - name: Install & Choose Python for Mac
-        if: runner.os == 'macOS' && env.manylinux != 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
-            3.11) PY_FULL_VERSION=3.11.6; MACOS_VERSION=11 ;;
-            3.12) PY_FULL_VERSION=3.12.0; MACOS_VERSION=11 ;;
-          esac
-          INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
-          curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
-          sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
-          curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         run: |
@@ -271,13 +180,6 @@ jobs:
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Install Rust (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          set -e
-          curl -sSf -o rustup-init.exe https://win.rustup.rs
-          rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
-          echo "%USERPROFILE%\.cargo\bin" >> $GITHUB_PATH
       - name: Install rustfmt
         run: rustup component add rustfmt
       - name: Query Rust and Cargo versions
@@ -301,14 +203,6 @@ jobs:
           for whl in wheelhouse/${{ env.package_name }}-*.whl; do
             auditwheel repair "$whl" -w wheelhouse/
           done
-          ls -lh wheelhouse/
-      - name: Delocate wheels (macOS)
-        if: runner.os == 'macOS' && env.sdist != 'true'
-        run: |
-          set -e -x
-          "$PYBIN" -m pip install --user delocate
-          delocate-wheel --version
-          delocate-wheel wheelhouse/${{ env.package_name }}-*.whl
           ls -lh wheelhouse/
       - name: Test installing wheels and run examples
         if: env.sdist != 'true'
@@ -361,36 +255,6 @@ jobs:
       - name: Configure Visual Studio (Windows)
         shell: cmd
         run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64'
-      - name: Choose Python for manylinux
-        if: env.manylinux == 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PYVER=cp310-cp310 ;;
-            3.11) PYVER=cp311-cp311 ;;
-            3.12) PYVER=cp312-cp312 ;;
-          esac
-          PYBIN=/opt/python/$PYVER/bin/python3
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
-          echo "/opt/python/$PYVER/bin" >> $GITHUB_PATH
-      - name: Install & Choose Python for Mac
-        if: runner.os == 'macOS' && env.manylinux != 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
-            3.11) PY_FULL_VERSION=3.11.6; MACOS_VERSION=11 ;;
-            3.12) PY_FULL_VERSION=3.12.0; MACOS_VERSION=11 ;;
-          esac
-          INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
-          curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
-          sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
-          curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         shell: bash
         run: |
@@ -415,12 +279,6 @@ jobs:
         shell: bash
         run: |
           "$PYBIN" setup.py sdist
-      - name: Install Rust (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          set -e
-          curl https://sh.rustup.rs -sSf | sh -s -- -y
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
       - name: Install Rust (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -446,22 +304,6 @@ jobs:
         shell: bash
         run: |
           "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
-      - name: auditwheel repair (manylinux)
-        if: env.manylinux == 'true' && env.sdist != 'true'
-        run: |
-          set -e -x
-          for whl in wheelhouse/${{ env.package_name }}-*.whl; do
-            auditwheel repair "$whl" -w wheelhouse/
-          done
-          ls -lh wheelhouse/
-      - name: Delocate wheels (macOS)
-        if: runner.os == 'macOS' && env.sdist != 'true'
-        run: |
-          set -e -x
-          "$PYBIN" -m pip install --user delocate
-          delocate-wheel --version
-          delocate-wheel wheelhouse/${{ env.package_name }}-*.whl
-          ls -lh wheelhouse/
       - name: Test installing wheels and run examples
         if: env.sdist != 'true'
         shell: bash
@@ -479,12 +321,6 @@ jobs:
           set -e -x
           mkdir -p dist
           cp wheelhouse/${{ env.package_name }}*.whl dist/
-      - name: Prepare wheels for publish (manylinux)
-        if: env.sdist != 'true' && env.manylinux == 'true'
-        run: |
-          set -e -x
-          mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*manylinux*.whl dist/
       - name: Check artifacts with twine
         shell: bash
         run: |
@@ -516,21 +352,6 @@ jobs:
       - name: Choose default Python binary
         if: env.manylinux != 'true'
         run: echo "PYBIN=python" >> $GITHUB_ENV
-      - name: Configure Visual Studio (Windows)
-        if: runner.os == 'Windows' && env.manylinux != 'true'
-        shell: cmd
-        run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64'
-      - name: Choose Python for manylinux
-        if: env.manylinux == 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
-            3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
-            3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
-          esac
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Install & Choose Python for Mac
         if: runner.os == 'macOS' && env.manylinux != 'true'
         shell: bash
@@ -574,13 +395,6 @@ jobs:
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Install Rust (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          set -e
-          curl -sSf -o rustup-init.exe https://win.rustup.rs
-          rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
-          echo "%USERPROFILE%\.cargo\bin" >> $GITHUB_PATH
       - name: Install rustfmt
         run: rustup component add rustfmt
       - name: Query Rust and Cargo versions
@@ -597,14 +411,6 @@ jobs:
         if: env.sdist != 'true'
         run: |
           "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
-      - name: auditwheel repair (manylinux)
-        if: env.manylinux == 'true' && env.sdist != 'true'
-        run: |
-          set -e -x
-          for whl in wheelhouse/${{ env.package_name }}-*.whl; do
-            auditwheel repair "$whl" -w wheelhouse/
-          done
-          ls -lh wheelhouse/
       - name: Delocate wheels (macOS)
         if: runner.os == 'macOS' && env.sdist != 'true'
         run: |
@@ -629,12 +435,6 @@ jobs:
           set -e -x
           mkdir -p dist
           cp wheelhouse/${{ env.package_name }}*.whl dist/
-      - name: Prepare wheels for publish (manylinux)
-        if: env.sdist != 'true' && env.manylinux == 'true'
-        run: |
-          set -e -x
-          mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*manylinux*.whl dist/
       - name: Check artifacts with twine
         run: |
           set -e -x
