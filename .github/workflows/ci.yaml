@@ -334,7 +334,7 @@ jobs:
           path: dist/
 
   python-macos:
-    runs-on: macos-11
+    runs-on: macos-15
     env:
       SYSTEM_VERSION_COMPAT: 0
     strategy:
