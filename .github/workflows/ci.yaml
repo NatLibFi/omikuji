@@ -199,7 +199,7 @@ jobs:
 
   python-manylinux:
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:latest
     env:
       manylinux: true
     strategy:
