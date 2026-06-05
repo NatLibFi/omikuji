@@ -392,11 +392,13 @@ jobs:
           curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
+        shell: bash
         run: |
           set -e -x
           which "$PYBIN"
           "$PYBIN" -c "import sys; print(sys.version)"
       - name: Install dev dependencies
+        shell: bash
         run: |
           set -e -x
           "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
@@ -404,11 +406,13 @@ jobs:
           "$PYBIN" -m wheel version
           "$PYBIN" -m twine --version
       - name: Check Python code format
+        shell: bash
         run: |
           "$PYBIN" -m pip install --user black
           "$PYBIN" -m black --check ./
       - name: Build source distribution
         if: env.sdist == 'true'
+        shell: bash
         run: |
           "$PYBIN" setup.py sdist
       - name: Install Rust (Linux/macOS)
@@ -434,10 +438,12 @@ jobs:
           cargo -V
       - name: Test install from source distribution
         if: env.sdist == 'true'
+        shell: bash
         run: |
           "$PYBIN" -m pip -vvv install --user dist/*
       - name: Build wheels
         if: env.sdist != 'true'
+        shell: bash
         run: |
           "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
       - name: auditwheel repair (manylinux)
@@ -458,6 +464,7 @@ jobs:
           ls -lh wheelhouse/
       - name: Test installing wheels and run examples
         if: env.sdist != 'true'
+        shell: bash
         run: |
           set -e -x
           ls -lh wheelhouse/
@@ -479,6 +486,7 @@ jobs:
           mkdir -p dist
           cp wheelhouse/${{ env.package_name }}*manylinux*.whl dist/
       - name: Check artifacts with twine
+        shell: bash
         run: |
           set -e -x
           "$PYBIN" -m twine check dist/*
