@@ -375,11 +375,11 @@ jobs:
         run: |
           set -e
           case ${{ matrix.python-version }} in
-            3.8) PYBIN=/opt/python/cp38-cp38/bin/python ;;
-            3.9) PYBIN=/opt/python/cp39-cp39/bin/python ;;
-            3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
-            3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
-            3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
+            3.8) PYBIN=/opt/python/cp38-cp38/bin/python3 ;;
+            3.9) PYBIN=/opt/python/cp39-cp39/bin/python3 ;;
+            3.10) PYBIN=/opt/python/cp310-cp310/bin/python3 ;;
+            3.11) PYBIN=/opt/python/cp311-cp311/bin/python3 ;;
+            3.12) PYBIN=/opt/python/cp312-cp312/bin/python3 ;;
           esac
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Install & Choose Python for Mac
