@@ -72,7 +72,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PYBIN=/opt/python/cp38-cp38/bin/python ;;
             3.9) PYBIN=/opt/python/cp39-cp39/bin/python ;;
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
@@ -85,7 +85,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
             3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
@@ -95,8 +95,8 @@ jobs:
           INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
           curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
           sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python.version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python.version }}
+          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
+          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
           curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
@@ -212,7 +212,7 @@ jobs:
         if: env.manylinux != 'true'
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python.version }}
+          python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
       - name: Choose default Python binary
         if: env.manylinux != 'true'
@@ -226,7 +226,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PYBIN=/opt/python/cp38-cp38/bin/python ;;
             3.9) PYBIN=/opt/python/cp39-cp39/bin/python ;;
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
@@ -239,7 +239,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
             3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
@@ -249,8 +249,8 @@ jobs:
           INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
           curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
           sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python.version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python.version }}
+          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
+          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
           curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
@@ -362,7 +362,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python.version }}
+          python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
       - name: Choose default Python binary
         run: echo "PYBIN=python" >> $GITHUB_ENV
@@ -374,7 +374,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PYBIN=/opt/python/cp38-cp38/bin/python ;;
             3.9) PYBIN=/opt/python/cp39-cp39/bin/python ;;
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
@@ -387,7 +387,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
             3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
@@ -397,8 +397,8 @@ jobs:
           INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
           curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
           sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python.version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python.version }}
+          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
+          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
           curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
@@ -513,7 +513,7 @@ jobs:
         if: env.manylinux != 'true'
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python.version }}
+          python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
       - name: Choose default Python binary
         if: env.manylinux != 'true'
@@ -527,7 +527,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PYBIN=/opt/python/cp38-cp38/bin/python ;;
             3.9) PYBIN=/opt/python/cp39-cp39/bin/python ;;
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
@@ -540,7 +540,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          case ${{ matrix.python.version }} in
+          case ${{ matrix.python-version }} in
             3.8) PY_FULL_VERSION=3.8.10; MACOS_VERSION=x10.9 ;;
             3.9) PY_FULL_VERSION=3.9.12; MACOS_VERSION=x10.9 ;;
             3.10) PY_FULL_VERSION=3.10.4; MACOS_VERSION=11 ;;
@@ -550,8 +550,8 @@ jobs:
           INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
           curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
           sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python.version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python.version }}
+          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
+          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
           curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
