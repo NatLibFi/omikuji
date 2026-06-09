@@ -135,25 +135,10 @@ jobs:
       - uses: actions/checkout@v4
       # Python build steps identical to python-sdist (inlined for direct translation)
       - name: Setup Python
-        if: env.manylinux != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
-      - name: Choose default Python binary
-        if: env.manylinux != 'true'
-        run: echo "PYBIN=python" >> $GITHUB_ENV
-      - name: Choose Python for manylinux
-        if: env.manylinux == 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PYBIN=/opt/python/cp310-cp310/bin/python3 ;;
-            3.11) PYBIN=/opt/python/cp311-cp311/bin/python3 ;;
-            3.12) PYBIN=/opt/python/cp312-cp312/bin/python3 ;;
-          esac
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         run: |
           set -e -x
@@ -188,12 +173,7 @@ jobs:
           rustup component list --installed
           rustc -Vv
           cargo -V
-      - name: Test install from source distribution
-        if: env.sdist == 'true'
-        run: |
-          python -m pip -vvv install --user dist/*
       - name: Build wheels
-        if: env.sdist != 'true'
         run: |
           python -m pip -vvv wheel . -w wheelhouse/
       - name: auditwheel repair (manylinux)
@@ -205,7 +185,6 @@ jobs:
           done
           ls -lh wheelhouse/
       - name: Test installing wheels and run examples
-        if: env.sdist != 'true'
         run: |
           set -e -x
           ls -lh wheelhouse/
@@ -214,12 +193,6 @@ jobs:
           cd examples
           python run_py.py
           python -m pip uninstall -y ${{ env.package_name }}
-      - name: Prepare wheels for publish
-        if: env.sdist != 'true' && env.manylinux != 'true'
-        run: |
-          set -e -x
-          mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*.whl dist/
       - name: Prepare wheels for publish (manylinux)
         if: env.sdist != 'true' && env.manylinux == 'true'
         run: |
