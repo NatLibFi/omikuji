@@ -227,9 +227,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
-      - name: Configure Visual Studio (Windows)
-        shell: cmd
-        run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64'
       - name: Query Python version
         shell: bash
         run: |
@@ -267,8 +264,9 @@ jobs:
           cargo -V
       - name: Build wheels
         shell: cmd
-        run: |
-          python -m pip -vvv wheel . -w wheelhouse/
+        run: >-
+          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64
+          && python -m pip -vvv wheel . -w wheelhouse/
       - name: Test installing wheels and run examples
         shell: bash
         run: |
