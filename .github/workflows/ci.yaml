@@ -417,7 +417,7 @@ jobs:
           set -e -x
           "$PYBIN" -m pip install --user delocate
           delocate-wheel --version
-          delocate-wheel --require-archs arm64 wheelhouse/${{ env.package_name }}-*.whl
+          delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
           ls -lh wheelhouse/
       - name: Test installing wheels and run examples
         if: env.sdist != 'true'
