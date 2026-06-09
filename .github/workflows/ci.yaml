@@ -179,7 +179,7 @@ jobs:
           cargo -V
       - name: Build wheels
         run: |
-          python -m pip -vvv wheel . -w wheelhouse/
+          "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
       - name: auditwheel repair (manylinux)
         if: env.manylinux == 'true' && env.sdist != 'true'
         run: |
@@ -192,11 +192,11 @@ jobs:
         run: |
           set -e -x
           ls -lh wheelhouse/
-          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
+          "$PYBIN" -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
-          python run_py.py
-          python -m pip uninstall -y ${{ env.package_name }}
+          "$PYBIN" run_py.py
+          "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish (manylinux)
         if: env.sdist != 'true' && env.manylinux == 'true'
         run: |
@@ -206,7 +206,7 @@ jobs:
       - name: Check artifacts with twine
         run: |
           set -e -x
-          python -m twine check dist/*
+          "$PYBIN" -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()
