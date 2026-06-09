@@ -278,14 +278,17 @@ jobs:
           python setup.py sdist
       - name: Install Rust (Windows)
         if: runner.os == 'Windows'
+        shell: bash
         run: |
           set -e
           curl -sSf -o rustup-init.exe https://win.rustup.rs
           rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
           echo "%USERPROFILE%\.cargo\bin" >> $GITHUB_PATH
       - name: Install rustfmt
+        shell: bash
         run: rustup component add rustfmt
       - name: Query Rust and Cargo versions
+        shell: bash
         run: |
           rustup -V
           rustup component list --installed
@@ -314,6 +317,7 @@ jobs:
           python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
         if: env.sdist != 'true' && env.manylinux != 'true'
+        shell: bash
         run: |
           set -e -x
           mkdir -p dist
