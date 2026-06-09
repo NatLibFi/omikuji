@@ -15,23 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install Rust
         run: |
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
       - name: Install rustfmt
         run: rustup component add rustfmt
-
       - name: Query Rust and Cargo versions
         run: |
           rustup -V
           rustup component list --installed
           rustc -Vv
           cargo -V
-
       - name: Cargo test
         run: |
           set -e -x
@@ -40,7 +36,6 @@ jobs:
           cd c-api
           cargo fmt --all -- --check
           cargo test
-
       - name: Run example
         run: |
           set -e -x
@@ -200,7 +195,6 @@ jobs:
         python-version: ['3.10']
     steps:
       - uses: actions/checkout@v4
-      # Python build steps identical to python-sdist (inlined)
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -288,24 +282,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
-      - name: Choose default Python binary
-        run: echo "PYBIN=python" >> $GITHUB_ENV
-      - name: Install & Choose Python for Mac
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PY_FULL_VERSION=3.10.9; MACOS_VERSION=11 ;;
-            3.11) PY_FULL_VERSION=3.11.9; MACOS_VERSION=11 ;;
-            3.12) PY_FULL_VERSION=3.12.9; MACOS_VERSION=11 ;;
-          esac
-          INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
-          curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
-          sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
-          curl https://bootstrap.pypa.io/get-pip.py | python
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         run: |
           set -e -x
