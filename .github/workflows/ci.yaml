@@ -82,7 +82,7 @@ jobs:
       - name: Install dev dependencies
         run: |
           set -e -x
-          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
+          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "packaging>=26.2" "milksnake>=0.1.6"
           "$PYBIN" -m pip --version
           "$PYBIN" -m wheel version
           "$PYBIN" -m twine --version
