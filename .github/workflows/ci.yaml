@@ -317,9 +317,9 @@ jobs:
       - name: Delocate wheels (macOS)
         run: |
           set -e -x
-          python -m pip install --user delocate
-          python -m delocate-wheel --version
-          python -m delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
+          python -m pip install delocate
+          delocate-wheel --version
+          delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
           ls -lh wheelhouse/
       - name: Test installing wheels and run examples
         run: |
