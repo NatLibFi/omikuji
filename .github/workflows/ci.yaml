@@ -47,7 +47,7 @@ jobs:
   python-sdist:
     runs-on: ubuntu-latest
     env:
-      python.version: '3.12'
+      python.version: '3.14'
       sdist: true
     steps:
       - uses: actions/checkout@v4
@@ -111,7 +111,7 @@ jobs:
       manylinux: true
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v4
       - name: Set PYBIN for manylinux Python
@@ -192,7 +192,7 @@ jobs:
     runs-on: windows-2022
     strategy:
       matrix:
-        python-version: ['3.10']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
@@ -274,7 +274,7 @@ jobs:
       SYSTEM_VERSION_COMPAT: 0
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
