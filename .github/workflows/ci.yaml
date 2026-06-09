@@ -122,6 +122,8 @@ jobs:
             3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
             3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
             3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
+            3.13) PYBIN=/opt/python/cp313-cp313/bin/python ;;
+            3.14) PYBIN=/opt/python/cp314-cp314/bin/python ;;
           esac
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
