@@ -15,23 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install Rust
         run: |
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
       - name: Install rustfmt
         run: rustup component add rustfmt
-
       - name: Query Rust and Cargo versions
         run: |
           rustup -V
           rustup component list --installed
           rustc -Vv
           cargo -V
-
       - name: Cargo test
         run: |
           set -e -x
@@ -40,7 +36,6 @@ jobs:
           cd c-api
           cargo fmt --all -- --check
           cargo test
-
       - name: Run example
         run: |
           set -e -x
@@ -61,19 +56,6 @@ jobs:
         with:
           python-version: ${{ env.python.version }}
           architecture: ${{ env.python.architecture }}
-      - name: Choose default Python binary
-        run: echo "PYBIN=python" >> $GITHUB_ENV
-      - name: Choose Python for manylinux
-        if: env.manylinux == 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
-            3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
-            3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
-          esac
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         run: |
           set -e -x
@@ -95,7 +77,6 @@ jobs:
         run: |
           python setup.py sdist
       - name: Install Rust (Linux/macOS)
-        if: runner.os != 'Windows'
         run: |
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -159,12 +140,7 @@ jobs:
         run: |
           "$PYBIN" -m pip install --user black
           "$PYBIN" -m black --check ./
-      - name: Build source distribution
-        if: env.sdist == 'true'
-        run: |
-          "$PYBIN" setup.py sdist
       - name: Install Rust (Linux/macOS)
-        if: runner.os != 'Windows'
         run: |
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -181,7 +157,6 @@ jobs:
         run: |
           "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
       - name: auditwheel repair (manylinux)
-        if: env.manylinux == 'true' && env.sdist != 'true'
         run: |
           set -e -x
           for whl in wheelhouse/${{ env.package_name }}-*.whl; do
@@ -198,7 +173,6 @@ jobs:
           "$PYBIN" run_py.py
           "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish (manylinux)
-        if: env.sdist != 'true' && env.manylinux == 'true'
         run: |
           set -e -x
           mkdir -p dist
@@ -221,7 +195,6 @@ jobs:
         python-version: ['3.10']
     steps:
       - uses: actions/checkout@v4
-      # Python build steps identical to python-sdist (inlined)
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -304,33 +277,11 @@ jobs:
         python-version: ['3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
-      # Python build steps identical to python-sdist (inlined)
       - name: Setup Python
-        if: env.manylinux != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
-      - name: Choose default Python binary
-        if: env.manylinux != 'true'
-        run: echo "PYBIN=python" >> $GITHUB_ENV
-      - name: Install & Choose Python for Mac
-        if: runner.os == 'macOS' && env.manylinux != 'true'
-        shell: bash
-        run: |
-          set -e
-          case ${{ matrix.python-version }} in
-            3.10) PY_FULL_VERSION=3.10.9; MACOS_VERSION=11 ;;
-            3.11) PY_FULL_VERSION=3.11.9; MACOS_VERSION=11 ;;
-            3.12) PY_FULL_VERSION=3.12.9; MACOS_VERSION=11 ;;
-          esac
-          INSTALLER_NAME=python-$PY_FULL_VERSION-macos$MACOS_VERSION.pkg
-          curl https://www.python.org/ftp/python/$PY_FULL_VERSION/$INSTALLER_NAME --output $INSTALLER_NAME
-          sudo installer -pkg $INSTALLER_NAME -target /
-          echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
-          PYBIN=/usr/local/bin/python${{ matrix.python-version }}
-          curl https://bootstrap.pypa.io/get-pip.py | python
-          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         run: |
           set -e -x
@@ -347,12 +298,7 @@ jobs:
         run: |
           python -m pip install --user black
           python -m black --check ./
-      - name: Build source distribution
-        if: env.sdist == 'true'
-        run: |
-          python setup.py sdist
       - name: Install Rust (Linux/macOS)
-        if: runner.os != 'Windows'
         run: |
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -365,24 +311,17 @@ jobs:
           rustup component list --installed
           rustc -Vv
           cargo -V
-      - name: Test install from source distribution
-        if: env.sdist == 'true'
-        run: |
-          python -m pip -vvv install --user dist/*
       - name: Build wheels
-        if: env.sdist != 'true'
         run: |
           python -m pip -vvv wheel . -w wheelhouse/
       - name: Delocate wheels (macOS)
-        if: runner.os == 'macOS' && env.sdist != 'true'
         run: |
           set -e -x
-          python -m pip install --user delocate
+          python -m pip install delocate
           delocate-wheel --version
           delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
           ls -lh wheelhouse/
       - name: Test installing wheels and run examples
-        if: env.sdist != 'true'
         run: |
           set -e -x
           ls -lh wheelhouse/
@@ -392,7 +331,6 @@ jobs:
           python run_py.py
           python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
-        if: env.sdist != 'true' && env.manylinux != 'true'
         run: |
           set -e -x
           mkdir -p dist
