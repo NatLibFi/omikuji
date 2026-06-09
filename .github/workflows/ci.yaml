@@ -248,13 +248,7 @@ jobs:
         run: |
           python -m pip install --user black
           python -m black --check ./
-      - name: Build source distribution
-        if: env.sdist == 'true'
-        shell: bash
-        run: |
-          python setup.py sdist
       - name: Install Rust (Windows)
-        if: runner.os == 'Windows'
         shell: bash
         run: |
           set -e
@@ -271,18 +265,11 @@ jobs:
           rustup component list --installed
           rustc -Vv
           cargo -V
-      - name: Test install from source distribution
-        if: env.sdist == 'true'
-        shell: bash
-        run: |
-          python -m pip -vvv install --user dist/*
       - name: Build wheels
-        if: env.sdist != 'true'
         shell: bash
         run: |
           python -m pip -vvv wheel . -w wheelhouse/
       - name: Test installing wheels and run examples
-        if: env.sdist != 'true'
         shell: bash
         run: |
           set -e -x
@@ -293,7 +280,6 @@ jobs:
           python run_py.py
           python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
-        if: env.sdist != 'true' && env.manylinux != 'true'
         shell: bash
         run: |
           set -e -x
