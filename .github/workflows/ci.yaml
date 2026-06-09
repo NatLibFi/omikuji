@@ -77,23 +77,23 @@ jobs:
       - name: Query Python version
         run: |
           set -e -x
-          which "$PYBIN"
-          "$PYBIN" -c "import sys; print(sys.version)"
+          which python
+          python -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         run: |
           set -e -x
-          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "packaging>=26.2" "milksnake>=0.1.6"
-          "$PYBIN" -m pip --version
-          "$PYBIN" -m wheel version
-          "$PYBIN" -m twine --version
+          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "packaging>=26.2" "milksnake>=0.1.6"
+          python -m pip --version
+          python -m wheel version
+          python -m twine --version
       - name: Check Python code format
         run: |
-          "$PYBIN" -m pip install --user black
-          "$PYBIN" -m black --check ./
+          python -m pip install --user black
+          python -m black --check ./
       - name: Build source distribution
         if: env.sdist == 'true'
         run: |
-          "$PYBIN" setup.py sdist
+          python setup.py sdist
       - name: Install Rust (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
@@ -111,11 +111,11 @@ jobs:
       - name: Test install from source distribution
         if: env.sdist == 'true'
         run: |
-          "$PYBIN" -m pip -vvv install --user dist/*
+          python -m pip -vvv install --user dist/*
       - name: Check artifacts with twine
         run: |
           set -e -x
-          "$PYBIN" -m twine check dist/*
+          python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()
@@ -157,23 +157,23 @@ jobs:
       - name: Query Python version
         run: |
           set -e -x
-          which "$PYBIN"
-          "$PYBIN" -c "import sys; print(sys.version)"
+          which python
+          python -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         run: |
           set -e -x
-          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
-          "$PYBIN" -m pip --version
-          "$PYBIN" -m wheel version
-          "$PYBIN" -m twine --version
+          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
+          python -m pip --version
+          python -m wheel version
+          python -m twine --version
       - name: Check Python code format
         run: |
-          "$PYBIN" -m pip install --user black
-          "$PYBIN" -m black --check ./
+          python -m pip install --user black
+          python -m black --check ./
       - name: Build source distribution
         if: env.sdist == 'true'
         run: |
-          "$PYBIN" setup.py sdist
+          python setup.py sdist
       - name: Install Rust (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
@@ -191,11 +191,11 @@ jobs:
       - name: Test install from source distribution
         if: env.sdist == 'true'
         run: |
-          "$PYBIN" -m pip -vvv install --user dist/*
+          python -m pip -vvv install --user dist/*
       - name: Build wheels
         if: env.sdist != 'true'
         run: |
-          "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
+          python -m pip -vvv wheel . -w wheelhouse/
       - name: auditwheel repair (manylinux)
         if: env.manylinux == 'true' && env.sdist != 'true'
         run: |
@@ -209,11 +209,11 @@ jobs:
         run: |
           set -e -x
           ls -lh wheelhouse/
-          "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          "$PYBIN" -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
+          python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
-          "$PYBIN" run_py.py
-          "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
+          python run_py.py
+          python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
         if: env.sdist != 'true' && env.manylinux != 'true'
         run: |
@@ -229,7 +229,7 @@ jobs:
       - name: Check artifacts with twine
         run: |
           set -e -x
-          "$PYBIN" -m twine check dist/*
+          python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()
@@ -250,8 +250,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
-      - name: Choose default Python binary
-        run: echo "PYBIN=python" >> "$GITHUB_ENV"
       - name: Configure Visual Studio (Windows)
         shell: cmd
         run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64'
@@ -259,26 +257,25 @@ jobs:
         shell: bash
         run: |
           set -e -x
-          which "$PYBIN"
-          "$PYBIN" -c "import sys; print(sys.version)"
+          python -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         shell: bash
         run: |
           set -e -x
-          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
-          "$PYBIN" -m pip --version
-          "$PYBIN" -m wheel version
-          "$PYBIN" -m twine --version
+          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
+          python -m pip --version
+          python -m wheel version
+          python -m twine --version
       - name: Check Python code format
         shell: bash
         run: |
-          "$PYBIN" -m pip install --user black
-          "$PYBIN" -m black --check ./
+          python -m pip install --user black
+          python -m black --check ./
       - name: Build source distribution
         if: env.sdist == 'true'
         shell: bash
         run: |
-          "$PYBIN" setup.py sdist
+          python setup.py sdist
       - name: Install Rust (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -298,23 +295,23 @@ jobs:
         if: env.sdist == 'true'
         shell: bash
         run: |
-          "$PYBIN" -m pip -vvv install --user dist/*
+          python -m pip -vvv install --user dist/*
       - name: Build wheels
         if: env.sdist != 'true'
         shell: bash
         run: |
-          "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
+          python -m pip -vvv wheel . -w wheelhouse/
       - name: Test installing wheels and run examples
         if: env.sdist != 'true'
         shell: bash
         run: |
           set -e -x
           ls -lh wheelhouse/
-          "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          "$PYBIN" -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
+          python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
-          "$PYBIN" run_py.py
-          "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
+          python run_py.py
+          python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
         if: env.sdist != 'true' && env.manylinux != 'true'
         run: |
@@ -325,7 +322,7 @@ jobs:
         shell: bash
         run: |
           set -e -x
-          "$PYBIN" -m twine check dist/*
+          python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()
@@ -367,28 +364,28 @@ jobs:
           sudo installer -pkg $INSTALLER_NAME -target /
           echo "/Users/runner/Library/Python/${{ matrix.python-version }}/bin" >> $GITHUB_PATH
           PYBIN=/usr/local/bin/python${{ matrix.python-version }}
-          curl https://bootstrap.pypa.io/get-pip.py | "$PYBIN"
+          curl https://bootstrap.pypa.io/get-pip.py | python
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
       - name: Query Python version
         run: |
           set -e -x
-          which "$PYBIN"
-          "$PYBIN" -c "import sys; print(sys.version)"
+          which python
+          python -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         run: |
           set -e -x
-          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
-          "$PYBIN" -m pip --version
-          "$PYBIN" -m wheel version
-          "$PYBIN" -m twine --version
+          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
+          python -m pip --version
+          python -m wheel version
+          python -m twine --version
       - name: Check Python code format
         run: |
-          "$PYBIN" -m pip install --user black
-          "$PYBIN" -m black --check ./
+          python -m pip install --user black
+          python -m black --check ./
       - name: Build source distribution
         if: env.sdist == 'true'
         run: |
-          "$PYBIN" setup.py sdist
+          python setup.py sdist
       - name: Install Rust (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
@@ -406,16 +403,16 @@ jobs:
       - name: Test install from source distribution
         if: env.sdist == 'true'
         run: |
-          "$PYBIN" -m pip -vvv install --user dist/*
+          python -m pip -vvv install --user dist/*
       - name: Build wheels
         if: env.sdist != 'true'
         run: |
-          "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
+          python -m pip -vvv wheel . -w wheelhouse/
       - name: Delocate wheels (macOS)
         if: runner.os == 'macOS' && env.sdist != 'true'
         run: |
           set -e -x
-          "$PYBIN" -m pip install --user delocate
+          python -m pip install --user delocate
           delocate-wheel --version
           delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
           ls -lh wheelhouse/
@@ -424,11 +421,11 @@ jobs:
         run: |
           set -e -x
           ls -lh wheelhouse/
-          "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          "$PYBIN" -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
+          python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
-          "$PYBIN" run_py.py
-          "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
+          python run_py.py
+          python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
         if: env.sdist != 'true' && env.manylinux != 'true'
         run: |
@@ -438,7 +435,7 @@ jobs:
       - name: Check artifacts with twine
         run: |
           set -e -x
-          "$PYBIN" -m twine check dist/*
+          python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()
