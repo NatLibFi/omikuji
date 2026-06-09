@@ -266,7 +266,7 @@ jobs:
           rustc -Vv
           cargo -V
       - name: Build wheels
-        shell: bash
+        shell: cmd
         run: |
           python -m pip -vvv wheel . -w wheelhouse/
       - name: Test installing wheels and run examples
