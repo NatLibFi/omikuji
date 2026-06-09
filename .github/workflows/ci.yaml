@@ -251,7 +251,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ env.python.architecture }}
       - name: Choose default Python binary
-        run: echo "PYBIN=python" >> $GITHUB_ENV
+        run: echo "PYBIN=python" >> "$GITHUB_ENV"
       - name: Configure Visual Studio (Windows)
         shell: cmd
         run: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64'
