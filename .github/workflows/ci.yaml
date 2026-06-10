@@ -10,6 +10,9 @@ env:
   package_name: omikuji
   python.architecture: x64
 
+permissions:
+  contents: read
+
 jobs:
   rust-build:
     runs-on: ubuntu-latest
