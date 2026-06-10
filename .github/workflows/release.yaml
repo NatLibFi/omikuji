@@ -17,6 +17,7 @@ jobs:
       url: https://test.pypi.org/project/omikuji2/
     permissions:
       contents: read
+      actions: read
       id-token: write
     steps:
       - name: Download wheel artifacts
