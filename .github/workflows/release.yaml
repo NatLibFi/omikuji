@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   publish-to-pypi:
-    if: ${{ github.event.workflow_run.ref_type == 'tag' }}
+    if: ${{ github.event.workflow_run.ref_type == 'tag' && github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: testpypi
