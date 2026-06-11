@@ -46,14 +46,13 @@ jobs:
   python-sdist:
     runs-on: ubuntu-latest
     env:
-      python.version: '3.14'
-      sdist: true
+      PYTHON_VERSION: '3.14'
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.python.version }}
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Query Python version
         run: |
           set -e -x
@@ -71,7 +70,6 @@ jobs:
           python -m pip install --user black
           python -m black --check ./
       - name: Build source distribution
-        if: env.sdist == 'true'
         run: |
           python setup.py sdist
       - name: Install Rust (Linux/macOS)
@@ -88,7 +86,6 @@ jobs:
           rustc -Vv
           cargo -V
       - name: Test install from source distribution
-        if: env.sdist == 'true'
         run: |
           python -m pip -vvv install --user dist/*
       - name: Check artifacts with twine
@@ -99,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
+          name: ${{ github.job }}-${{ env.PYTHON_VERSION }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
 
   python-manylinux:
