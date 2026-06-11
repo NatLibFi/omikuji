@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ github.job }}-${{ runner.OS }}-${{ runner.Arch }}
+          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
 
   python-manylinux:
@@ -185,7 +185,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ github.job }}-${{ runner.OS }}-${{ runner.Arch }}
+          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
 
   python-windows:
@@ -264,7 +264,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ github.job }}-${{ runner.OS }}-${{ runner.Arch }}
+          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
 
   python-macos:
@@ -341,5 +341,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ${{ github.job }}-${{ runner.OS }}-${{ runner.Arch }}
+          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
