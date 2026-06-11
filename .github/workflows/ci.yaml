@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  package_name: omikuji
+  package_name: omikuji2
 
 jobs:
   rust-build:
