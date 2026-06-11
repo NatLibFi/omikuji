@@ -27,6 +27,7 @@ jobs:
           pattern: python-*
           path: dist/
           merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish package distributions to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
