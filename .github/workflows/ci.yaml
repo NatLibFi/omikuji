@@ -94,7 +94,6 @@ jobs:
           python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: ${{ github.job }}-${{ env.PYTHON_VERSION }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
@@ -180,7 +179,6 @@ jobs:
           "$PYBIN" -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
@@ -259,7 +257,6 @@ jobs:
           python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
@@ -336,7 +333,6 @@ jobs:
           python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
