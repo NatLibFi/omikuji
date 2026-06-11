@@ -54,7 +54,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.python.version }}
-          architecture: ${{ env.PYTHON_ARCHITECTURE }}
       - name: Query Python version
         run: |
           set -e -x
@@ -200,7 +199,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.PYTHON_ARCHITECTURE }}
       - name: Query Python version
         shell: bash
         run: |
@@ -282,7 +280,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ env.PYTHON_ARCHITECTURE }}
       - name: Query Python version
         run: |
           set -e -x
