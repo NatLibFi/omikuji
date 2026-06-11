@@ -11,6 +11,8 @@ env:
 
 jobs:
   rust-build:
+    # Skip push events from branches containing a dot (e.g. v2.0-feature) — only run for main branch, tags, PRs, and manual dispatch
+    if: ${{ github.event_name != 'push' || github.ref_type != 'branch' || !contains(github.ref, '.') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +46,8 @@ jobs:
           bash run_cli.sh
 
   python-sdist:
+    # Skip push events from branches containing a dot (e.g. v2.0-feature) — only run for main branch, tags, PRs, and manual dispatch
+    if: ${{ github.event_name != 'push' || github.ref_type != 'branch' || !contains(github.ref, '.') }}
     runs-on: ubuntu-latest
     env:
       PYTHON_VERSION: '3.14'
@@ -99,6 +103,8 @@ jobs:
           path: dist/
 
   python-manylinux:
+    # Skip push events from branches containing a dot (e.g. v2.0-feature) — only run for main branch, tags, PRs, and manual dispatch
+    if: ${{ github.event_name != 'push' || github.ref_type != 'branch' || !contains(github.ref, '.') }}
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:latest
     env:
@@ -184,6 +190,8 @@ jobs:
           path: dist/
 
   python-windows:
+    # Skip push events from branches containing a dot (e.g. v2.0-feature) — only run for main branch, tags, PRs, and manual dispatch
+    if: ${{ github.event_name != 'push' || github.ref_type != 'branch' || !contains(github.ref, '.') }}
     runs-on: windows-2022
     strategy:
       matrix:
@@ -262,6 +270,8 @@ jobs:
           path: dist/
 
   python-macos:
+    # Skip push events from branches containing a dot (e.g. v2.0-feature) — only run for main branch, tags, PRs, and manual dispatch
+    if: ${{ github.event_name != 'push' || github.ref_type != 'branch' || !contains(github.ref, '.') }}
     runs-on: macos-15
     env:
       SYSTEM_VERSION_COMPAT: 0
