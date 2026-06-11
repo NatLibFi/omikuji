@@ -1,5 +1,6 @@
 # Omikuji
-[![Build Status](https://dev.azure.com/yubingdong/omikuji/_apis/build/status/tomtung.omikuji?branchName=master)](https://dev.azure.com/yubingdong/omikuji/_build/latest?definitionId=1&branchName=master) [![Crate version](https://img.shields.io/crates/v/omikuji)](https://crates.io/crates/omikuji) [![PyPI version](https://img.shields.io/pypi/v/omikuji)](https://pypi.org/project/omikuji/)
+[![CI pipeline](https://github.com/NatLibFi/omikuji/actions/workflows/ci.yaml/badge.svg)](https://github.com/NatLibFi/omikuji/actions/workflows/ci.yaml)
+[![Crate version](https://img.shields.io/crates/v/omikuji)](https://crates.io/crates/omikuji) [![PyPI version](https://img.shields.io/pypi/v/omikuji)](https://pypi.org/project/omikuji/)
 
 An efficient implementation of Partitioned Label Trees (Prabhu et al., 2018) and its variations for extreme multi-label classification, written in Rust🦀 with love💖.
 
