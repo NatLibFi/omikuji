@@ -84,7 +84,7 @@ setup(
     python_requires=">=3.8",
     url="https://github.com/tomtung/omikuji",
     license="MIT",
-    packages=["omikuji"],
+    packages=["omikuji2"],
     package_dir={"": "python-wrapper"},
     zip_safe=False,
     platforms="any",
