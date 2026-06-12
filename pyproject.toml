@@ -9,8 +9,7 @@ authors = [
     {name = "Tom Dong", email = "tom.tung.dyb@gmail.com"},
 ]
 description = "Python binding to Omikuji, an efficient implementation of Partioned Label Trees and its variations for extreme multi-label classification"
-readme = "README.md"
-readme.content-type = "text/markdown"
+readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.8"
 license = {text = "MIT"}
 urls = {Homepage = "https://github.com/tomtung/omikuji"}
