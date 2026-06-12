@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=65.0", "milksnake>=0.1.6"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omikuji2"
+version = "0.5.1"
+authors = [
+    {name = "Tom Dong", email = "tom.tung.dyb@gmail.com"},
+]
+description = "Python binding to Omikuji, an efficient implementation of Partioned Label Trees and its variations for extreme multi-label classification"
+readme = "README.md"
+readme.content-type = "text/markdown"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+urls = {Homepage = "https://github.com/tomtung/omikuji"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = []
+
+[project.optional-dependencies]
+build = ["milksnake>=0.1.6"]
+
+[tool.setuptools]
+zip-safe = false
+platforms = ["any"]
+packages = {find = {where = ["python-wrapper"]}}
+
+[tool.milksnake]
+module = "milksnake_tasks"
+tasks = ["build_native"]
+universal = false
