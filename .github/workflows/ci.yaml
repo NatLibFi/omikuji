@@ -170,7 +170,7 @@ jobs:
           set -e -x
           ls -lh wheelhouse/
           "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          "$PYBIN" -c "import sys; sys.path.remove(''); import omikuji; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          "$PYBIN" -c "import sys; sys.path.remove(''); import omikuji; print('Installed version: ' + omikuji.__version__)"
           cd examples
           "$PYBIN" run_py.py
           "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
