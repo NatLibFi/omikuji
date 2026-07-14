@@ -30,5 +30,6 @@ classifiers = [
 ]
 
 [tool.maturin]
-features = ["pyo3/extension-module"]
-module-name = "omikuji2._omikuji"
+project-path = "python-wrapper"
+module-name = "omikuji._omikuji"
+python-source = "python-wrapper"

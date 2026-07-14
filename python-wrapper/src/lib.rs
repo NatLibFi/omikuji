@@ -14,16 +14,17 @@ impl Model {
     /// Load Omikuji model from the given directory.
     #[staticmethod]
     fn load(path: String) -> PyResult<Self> {
-        let model = omikuji::Model::load(Path::new(&path))
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load model: {}", e)))?;
+        let model = omikuji::Model::load(Path::new(&path)).map_err(|e| {
+            pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load model: {}", e))
+        })?;
         Ok(Model { inner: model })
     }
 
     /// Save Omikuji model to the given directory.
     fn save(&self, path: String) -> PyResult<()> {
-        self.inner
-            .save(Path::new(&path))
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to save model: {}", e)))?;
+        self.inner.save(Path::new(&path)).map_err(|e| {
+            pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to save model: {}", e))
+        })?;
         Ok(())
     }
 
@@ -39,7 +40,12 @@ impl Model {
                 .num_threads(n)
                 .stack_size(32 * 1024 * 1024)
                 .build()
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to create thread pool: {}", e)))?;
+                .map_err(|e| {
+                    pyo3::exceptions::PyRuntimeError::new_err(format!(
+                        "Failed to create thread pool: {}",
+                        e
+                    ))
+                })?;
             pool.install(|| self.inner.densify_weights(max_sparse_density));
         } else {
             self.inner.densify_weights(max_sparse_density);
@@ -191,11 +197,13 @@ impl HyperParam {
             min_branch_size: min_branch_size.unwrap_or(default.min_branch_size),
             max_depth: max_depth.unwrap_or(default.max_depth),
             centroid_threshold: centroid_threshold.unwrap_or(default.centroid_threshold),
-            collapse_every_n_layers: collapse_every_n_layers.unwrap_or(default.collapse_every_n_layers),
+            collapse_every_n_layers: collapse_every_n_layers
+                .unwrap_or(default.collapse_every_n_layers),
             linear_loss_type: linear_loss_type.unwrap_or(default.linear.loss_type.into()),
             linear_eps: linear_eps.unwrap_or(default.linear.eps),
             linear_c: linear_c.unwrap_or(default.linear.c),
-            linear_weight_threshold: linear_weight_threshold.unwrap_or(default.linear.weight_threshold),
+            linear_weight_threshold: linear_weight_threshold
+                .unwrap_or(default.linear.weight_threshold),
             linear_max_iter: linear_max_iter.unwrap_or(default.linear.max_iter),
             cluster_k: cluster_k.unwrap_or(default.cluster.k),
             cluster_balanced: cluster_balanced.unwrap_or(default.cluster.balanced),
@@ -207,21 +215,66 @@ impl HyperParam {
         if let Some(kwargs) = kwargs {
             if let Some(linear) = kwargs.get_item("linear").ok().flatten() {
                 if let Ok(linear_dict) = linear.downcast::<PyDict>() {
-                    hyper_param.linear_eps = linear_dict.get_item("eps").ok().flatten().and_then(|v| v.extract::<f32>().ok()).unwrap_or(hyper_param.linear_eps);
-                    hyper_param.linear_c = linear_dict.get_item("c").ok().flatten().and_then(|v| v.extract::<f32>().ok()).unwrap_or(hyper_param.linear_c);
-                    hyper_param.linear_weight_threshold = linear_dict.get_item("weight_threshold").ok().flatten().and_then(|v| v.extract::<f32>().ok()).unwrap_or(hyper_param.linear_weight_threshold);
-                    hyper_param.linear_max_iter = linear_dict.get_item("max_iter").ok().flatten().and_then(|v| v.extract::<u32>().ok()).unwrap_or(hyper_param.linear_max_iter);
-                    if let Some(loss_type) = linear_dict.get_item("loss_type").ok().flatten().and_then(|v| v.extract::<LossType>().ok()) {
+                    hyper_param.linear_eps = linear_dict
+                        .get_item("eps")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<f32>().ok())
+                        .unwrap_or(hyper_param.linear_eps);
+                    hyper_param.linear_c = linear_dict
+                        .get_item("c")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<f32>().ok())
+                        .unwrap_or(hyper_param.linear_c);
+                    hyper_param.linear_weight_threshold = linear_dict
+                        .get_item("weight_threshold")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<f32>().ok())
+                        .unwrap_or(hyper_param.linear_weight_threshold);
+                    hyper_param.linear_max_iter = linear_dict
+                        .get_item("max_iter")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<u32>().ok())
+                        .unwrap_or(hyper_param.linear_max_iter);
+                    if let Some(loss_type) = linear_dict
+                        .get_item("loss_type")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<LossType>().ok())
+                    {
                         hyper_param.linear_loss_type = loss_type;
                     }
                 }
             }
             if let Some(cluster) = kwargs.get_item("cluster").ok().flatten() {
                 if let Ok(cluster_dict) = cluster.downcast::<PyDict>() {
-                    hyper_param.cluster_k = cluster_dict.get_item("k").ok().flatten().and_then(|v| v.extract::<usize>().ok()).unwrap_or(hyper_param.cluster_k);
-                    hyper_param.cluster_balanced = cluster_dict.get_item("balanced").ok().flatten().and_then(|v| v.extract::<bool>().ok()).unwrap_or(hyper_param.cluster_balanced);
-                    hyper_param.cluster_eps = cluster_dict.get_item("eps").ok().flatten().and_then(|v| v.extract::<f32>().ok()).unwrap_or(hyper_param.cluster_eps);
-                    hyper_param.cluster_min_size = cluster_dict.get_item("min_size").ok().flatten().and_then(|v| v.extract::<usize>().ok()).unwrap_or(hyper_param.cluster_min_size);
+                    hyper_param.cluster_k = cluster_dict
+                        .get_item("k")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<usize>().ok())
+                        .unwrap_or(hyper_param.cluster_k);
+                    hyper_param.cluster_balanced = cluster_dict
+                        .get_item("balanced")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<bool>().ok())
+                        .unwrap_or(hyper_param.cluster_balanced);
+                    hyper_param.cluster_eps = cluster_dict
+                        .get_item("eps")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<f32>().ok())
+                        .unwrap_or(hyper_param.cluster_eps);
+                    hyper_param.cluster_min_size = cluster_dict
+                        .get_item("min_size")
+                        .ok()
+                        .flatten()
+                        .and_then(|v| v.extract::<usize>().ok())
+                        .unwrap_or(hyper_param.cluster_min_size);
                 }
             }
         }
@@ -304,16 +357,24 @@ fn train_on_data(
             .num_threads(n)
             .stack_size(32 * 1024 * 1024)
             .build()
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to create thread pool: {}", e)))?;
+            .map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!(
+                    "Failed to create thread pool: {}",
+                    e
+                ))
+            })?;
         let dataset = pool.install(|| {
-            omikuji::DataSet::load_xc_repo_data_file(Path::new(&data_path))
-                .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load data: {}", e)))
+            omikuji::DataSet::load_xc_repo_data_file(Path::new(&data_path)).map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load data: {}", e))
+            })
         })?;
         let model = pool.install(|| hyper_param.train(dataset));
         Ok(Model { inner: model })
     } else {
-        let dataset = omikuji::DataSet::load_xc_repo_data_file(Path::new(&data_path))
-            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load data: {}", e)))?;
+        let dataset =
+            omikuji::DataSet::load_xc_repo_data_file(Path::new(&data_path)).map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load data: {}", e))
+            })?;
         let model = hyper_param.train(dataset);
         Ok(Model { inner: model })
     }
@@ -322,8 +383,9 @@ fn train_on_data(
 /// Initialize a simple logger that writes to stdout.
 #[pyfunction]
 fn init_logger() -> PyResult<()> {
-    simple_logger::init()
-        .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to initialize logger: {}", e)))?;
+    simple_logger::init().map_err(|e| {
+        pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to initialize logger: {}", e))
+    })?;
     Ok(())
 }
 
