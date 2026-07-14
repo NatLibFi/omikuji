@@ -1,0 +1,30 @@
+[package]
+name = "omikuji2"
+version = "0.5.1"
+edition = "2021"
+authors = ["Tom Dong <tom.tung.dyb@gmail.com>"]
+
+[lib]
+name = "_omikuji"
+crate-type = ["cdylib"]
+
+[dependencies]
+itertools = "0.11.*"
+ndarray = { version = "0.14.*", features = ["serde-1"] }
+num-traits = "0.2.*"
+order-stat = "0.1.*"
+ordered-float = "3.0.*"
+pbr = "1.1.*"
+rand = "0.8.*"
+rayon = "1.8.*"
+serde = { version = "1.0.*", features = ["derive"] }
+serde_cbor = "0.11.*"
+serde_json = "1.0.*"
+simple_logger = "4.2.*"
+hashbrown = "0.14.*"
+pdqselect = "0.1.*"
+sprs = { version = "0.9.*", features = ["serde"] }
+const-default = "1.0.*"
+log = "0.4.*"
+pyo3 = { version = "0.22", features = ["extension-module"] }
+omikuji = { path = ".." }

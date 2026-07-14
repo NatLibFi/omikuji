@@ -34,7 +34,7 @@ jobs:
           set -e -x
           cargo fmt --all -- --check
           cargo test --features cli
-          cd c-api
+          cd python-wrapper
           cargo fmt --all -- --check
           cargo test
       - name: Run example
@@ -65,17 +65,18 @@ jobs:
       - name: Install dev dependencies
         run: |
           set -e -x
-          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "packaging>=26.2" "milksnake>=0.1.6"
+          python -m pip -vvv install --user --upgrade pip wheel "packaging>=26.2" twine maturin
           python -m pip --version
           python -m wheel version
           python -m twine --version
+          maturin --version
       - name: Check Python code format
         run: |
           python -m pip install --user black
           python -m black --check ./
       - name: Build source distribution
         run: |
-          python setup.py sdist
+          maturin build --out dist/
       - name: Install Rust (Linux/macOS)
         run: |
           set -e
@@ -134,10 +135,11 @@ jobs:
       - name: Install dev dependencies
         run: |
           set -e -x
-          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
+          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "packaging>=26.2" twine maturin
           "$PYBIN" -m pip --version
           "$PYBIN" -m wheel version
           "$PYBIN" -m twine --version
+          "$PYBIN" -m maturin --version
       - name: Check Python code format
         run: |
           "$PYBIN" -m pip install --user black
@@ -155,13 +157,13 @@ jobs:
           rustup component list --installed
           rustc -Vv
           cargo -V
-      - name: Build wheels
+      - name: Build wheels with maturin
         run: |
-          "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
+          "$PYBIN" -m maturin build --interpreter "$PYBIN" --out wheelhouse/
       - name: auditwheel repair (manylinux)
         run: |
           set -e -x
-          for whl in wheelhouse/${{ env.package_name }}-*.whl; do
+          for whl in wheelhouse/omikuji2*-manylinux*.whl; do
             auditwheel repair "$whl" -w wheelhouse/
           done
           ls -lh wheelhouse/
@@ -169,16 +171,16 @@ jobs:
         run: |
           set -e -x
           ls -lh wheelhouse/
-          "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          "$PYBIN" -c "import sys; sys.path.remove(''); import omikuji; print('Installed version: ' + omikuji.__version__)"
+          "$PYBIN" -m pip install omikuji2 --no-index -f wheelhouse/ --user
+          "$PYBIN" -c "import sys; sys.path.remove(''); import omikuji2; print('Installed version: ' + omikuji2.__version__)"
           cd examples
           "$PYBIN" run_py.py
-          "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
+          "$PYBIN" -m pip uninstall -y omikuji2
       - name: Prepare wheels for publish (manylinux)
         run: |
           set -e -x
           mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*manylinux*.whl dist/
+          cp wheelhouse/omikuji2*manylinux*.whl dist/
       - name: Check artifacts with twine
         run: |
           set -e -x
@@ -211,10 +213,11 @@ jobs:
         shell: bash
         run: |
           set -e -x
-          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
+          python -m pip -vvv install --user --upgrade pip wheel "packaging>=26.2" twine maturin
           python -m pip --version
           python -m wheel version
           python -m twine --version
+          maturin --version
       - name: Check Python code format
         shell: bash
         run: |
@@ -237,27 +240,27 @@ jobs:
           rustup component list --installed
           rustc -Vv
           cargo -V
-      - name: Build wheels
+      - name: Build wheels with maturin
         shell: cmd
         run: >-
           "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64
-          && python -m pip -vvv wheel . -w wheelhouse/
+          && maturin build --interpreter python --out wheelhouse/
       - name: Test installing wheels and run examples
         shell: bash
         run: |
           set -e -x
           ls -lh wheelhouse/
-          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          python -c "import sys; sys.path.remove(''); import omikuji; print('Installed version: ' + omikuji.__version__)"
+          python -m pip install omikuji2 --no-index -f wheelhouse/ --user
+          python -c "import sys; sys.path.remove(''); import omikuji2; print('Installed version: ' + omikuji2.__version__)"
           cd examples
           python run_py.py
-          python -m pip uninstall -y ${{ env.package_name }}
+          python -m pip uninstall -y omikuji2
       - name: Prepare wheels for publish
         shell: bash
         run: |
           set -e -x
           mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*.whl dist/
+          cp wheelhouse/omikuji2*.whl dist/
       - name: Check artifacts with twine
         shell: bash
         run: |
@@ -292,7 +295,7 @@ jobs:
       - name: Install dev dependencies
         run: |
           set -e -x
-          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
+          python -m pip -vvv install --user --upgrade pip wheel twine maturin
           python -m pip --version
           python -m wheel version
           python -m twine --version
@@ -313,30 +316,23 @@ jobs:
           rustup component list --installed
           rustc -Vv
           cargo -V
-      - name: Build wheels
+      - name: Build wheels with maturin
         run: |
-          python -m pip -vvv wheel . -w wheelhouse/
-      - name: Delocate wheels (macOS)
-        run: |
-          set -e -x
-          python -m pip install delocate
-          delocate-wheel --version
-          delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
-          ls -lh wheelhouse/
+          maturin build --universal --out wheelhouse/
       - name: Test installing wheels and run examples
         run: |
           set -e -x
           ls -lh wheelhouse/
-          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          python -c "import sys; sys.path.remove(''); import omikuji; print('Installed version: ' + omikuji.__version__)"
+          python -m pip install omikuji2 --no-index -f wheelhouse/ --user
+          python -c "import sys; sys.path.remove(''); import omikuji2; print('Installed version: ' + omikuji2.__version__)"
           cd examples
           python run_py.py
-          python -m pip uninstall -y ${{ env.package_name }}
+          python -m pip uninstall -y omikuji2
       - name: Prepare wheels for publish
         run: |
           set -e -x
           mkdir -p dist
-          cp wheelhouse/${{ env.package_name }}*.whl dist/
+          cp wheelhouse/omikuji2*.whl dist/
       - name: Check artifacts with twine
         run: |
           set -e -x

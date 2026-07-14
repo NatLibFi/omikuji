@@ -1,5 +1,5 @@
 include Cargo.toml Cargo.lock
-include c-api/Cargo.toml c-api/Cargo.lock
+include python-wrapper/Cargo.toml
 recursive-include . *.rs
 prune target
-prune c-api/target
+prune python-wrapper/target
