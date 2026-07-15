@@ -53,6 +53,19 @@ jobs:
       PYTHON_VERSION: '3.14'
     steps:
       - uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          set -e
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+      - name: Query Rust and Cargo versions
+        run: |
+          rustup -V
+          rustup component list --installed
+          rustc -Vv
+          cargo -V
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -77,19 +90,6 @@ jobs:
       - name: Build source distribution
         run: |
           maturin build --release --out dist/
-      - name: Install Rust (Linux/macOS)
-        run: |
-          set -e
-          curl https://sh.rustup.rs -sSf | sh -s -- -y
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Install rustfmt
-        run: rustup component add rustfmt
-      - name: Query Rust and Cargo versions
-        run: |
-          rustup -V
-          rustup component list --installed
-          rustc -Vv
-          cargo -V
       - name: Test install from source distribution
         run: |
           python -m pip -vvv install --user dist/*
