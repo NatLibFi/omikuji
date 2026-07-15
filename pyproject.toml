@@ -30,6 +30,6 @@ classifiers = [
 ]
 
 [tool.maturin]
-project-path = "python-wrapper"
+manifest-path = "python-wrapper/Cargo.toml"
 module-name = "omikuji._omikuji"
 python-source = "python-wrapper"
