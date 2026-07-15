@@ -2,11 +2,14 @@ use omikuji::rayon;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use std::path::Path;
+use std::sync::Mutex;
 
 /// PyO3-compatible Model wrapper
 #[pyclass]
 struct Model {
     inner: omikuji::Model,
+    /// Cached thread pool for parallel operations (mirrors Python implementation's self._thread_pool)
+    thread_pool: Mutex<rayon::ThreadPool>,
 }
 
 #[pymethods]
@@ -17,7 +20,42 @@ impl Model {
         let model = omikuji::Model::load(Path::new(&path)).map_err(|e| {
             pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load model: {}", e))
         })?;
-        Ok(Model { inner: model })
+
+        // Create default thread pool (rayon auto-detects thread count)
+        let pool = rayon::ThreadPoolBuilder::new()
+            .stack_size(32 * 1024 * 1024)
+            .build()
+            .map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!(
+                    "Failed to create thread pool: {}",
+                    e
+                ))
+            })?;
+
+        Ok(Model {
+            inner: model,
+            thread_pool: Mutex::new(pool),
+        })
+    }
+
+    /// Initialize/replace the thread pool for processing model predictions.
+    ///
+    /// If n_threads is set to 0, the number of threads is automatically chosen
+    /// based on the number of available CPU cores.
+    fn init_prediction_thread_pool(&mut self, n_threads: usize) -> PyResult<()> {
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(n_threads)
+            .stack_size(32 * 1024 * 1024)
+            .build()
+            .map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!(
+                    "Failed to create thread pool: {}",
+                    e
+                ))
+            })?;
+
+        *self.thread_pool.lock().unwrap() = pool;
+        Ok(())
     }
 
     /// Save Omikuji model to the given directory.
@@ -35,8 +73,8 @@ impl Model {
         max_sparse_density: f32,
         n_threads: Option<usize>,
     ) -> PyResult<()> {
-        if let Some(n) = n_threads {
-            let pool = rayon::ThreadPoolBuilder::new()
+        let pool = match n_threads {
+            Some(n) => rayon::ThreadPoolBuilder::new()
                 .num_threads(n)
                 .stack_size(32 * 1024 * 1024)
                 .build()
@@ -45,11 +83,16 @@ impl Model {
                         "Failed to create thread pool: {}",
                         e
                     ))
-                })?;
-            pool.install(|| self.inner.densify_weights(max_sparse_density));
-        } else {
-            self.inner.densify_weights(max_sparse_density);
-        }
+                })?,
+            None => {
+                // Reuse the cached thread pool (mirrors Python implementation's self._thread_pool behavior)
+                let guard = self.thread_pool.lock().unwrap();
+                guard.install(|| self.inner.densify_weights(max_sparse_density));
+                return Ok(());
+            }
+        };
+
+        pool.install(|| self.inner.densify_weights(max_sparse_density));
         Ok(())
     }
 
@@ -64,7 +107,13 @@ impl Model {
     ) -> PyResult<Vec<(u32, f32)>> {
         let beam_size = beam_size.unwrap_or(10);
         let top_k = top_k.unwrap_or(10);
-        let predictions = self.inner.predict(&feature_value_pairs, beam_size);
+
+        // Use the cached thread pool for prediction (same as Python)
+        let pool = self.thread_pool.lock().unwrap();
+        let predictions = pool.install(|| {
+            self.inner.predict(&feature_value_pairs, beam_size)
+        });
+
         let result: Vec<(u32, f32)> = predictions
             .into_iter()
             .take(top_k)
@@ -341,6 +390,28 @@ fn default_hyper_param() -> HyperParam {
     }
 }
 
+/// Helper: create a default thread pool for a new Model
+fn make_default_pool() -> PyResult<rayon::ThreadPool> {
+    rayon::ThreadPoolBuilder::new()
+        .stack_size(32 * 1024 * 1024)
+        .build()
+        .map_err(|e| {
+            pyo3::exceptions::PyRuntimeError::new_err(format!(
+                "Failed to create thread pool: {}",
+                e
+            ))
+        })
+}
+
+/// Helper: construct a Model with a thread pool
+fn make_model(inner: omikuji::Model) -> PyResult<Model> {
+    let pool = make_default_pool()?;
+    Ok(Model {
+        inner,
+        thread_pool: Mutex::new(pool),
+    })
+}
+
 /// Train a model with the given data file path and hyper-parameters.
 #[pyfunction]
 #[pyo3(signature = (data_path, hyper_param=None, n_threads=None))]
@@ -372,14 +443,14 @@ fn train_on_data(
             })
         })?;
         let model = pool.install(|| hyper_param.train(dataset));
-        Ok(Model { inner: model })
+        make_model(model)
     } else {
         let dataset =
             omikuji::DataSet::load_xc_repo_data_file(Path::new(&data_path)).map_err(|e| {
                 pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to load data: {}", e))
             })?;
         let model = hyper_param.train(dataset);
-        Ok(Model { inner: model })
+        make_model(model)
     }
 }
 
