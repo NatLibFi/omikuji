@@ -110,9 +110,7 @@ impl Model {
 
         // Use the cached thread pool for prediction (same as Python)
         let pool = self.thread_pool.lock().unwrap();
-        let predictions = pool.install(|| {
-            self.inner.predict(&feature_value_pairs, beam_size)
-        });
+        let predictions = pool.install(|| self.inner.predict(&feature_value_pairs, beam_size));
 
         let result: Vec<(u32, f32)> = predictions
             .into_iter()
