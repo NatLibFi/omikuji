@@ -84,7 +84,7 @@ impl Model {
 }
 
 /// Loss type enum for linear classifiers
-#[pyclass(eq, eq_int)]
+#[pyclass(eq, eq_int, from_py_object)]
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum LossType {
     Hinge,
@@ -120,7 +120,7 @@ impl From<LossType> for omikuji::model::liblinear::LossType {
 }
 
 /// Python-friendly HyperParam representation
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 struct HyperParam {
     #[pyo3(get)]
@@ -214,7 +214,7 @@ impl HyperParam {
         // Allow dict-style passing for linear and cluster sub-params
         if let Some(kwargs) = kwargs {
             if let Some(linear) = kwargs.get_item("linear").ok().flatten() {
-                if let Ok(linear_dict) = linear.downcast::<PyDict>() {
+                if let Ok(linear_dict) = linear.cast::<PyDict>() {
                     hyper_param.linear_eps = linear_dict
                         .get_item("eps")
                         .ok()
@@ -250,7 +250,7 @@ impl HyperParam {
                 }
             }
             if let Some(cluster) = kwargs.get_item("cluster").ok().flatten() {
-                if let Ok(cluster_dict) = cluster.downcast::<PyDict>() {
+                if let Ok(cluster_dict) = cluster.cast::<PyDict>() {
                     hyper_param.cluster_k = cluster_dict
                         .get_item("k")
                         .ok()
