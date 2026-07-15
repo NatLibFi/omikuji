@@ -89,7 +89,7 @@ jobs:
           python -m black --check ./
       - name: Build source distribution
         run: |
-          python -m maturin build --sdist --release --out dist/
+          python -m maturin sdist --release --out dist/
       - name: Test install from source distribution
         run: |
           python -m pip -vvv install --user dist/*
