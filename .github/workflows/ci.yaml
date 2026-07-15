@@ -82,14 +82,14 @@ jobs:
           python -m pip --version
           python -m wheel version
           python -m twine --version
-          maturin --version
+          python -m maturin --version
       - name: Check Python code format
         run: |
           python -m pip install --user black
           python -m black --check ./
       - name: Build source distribution
         run: |
-          maturin build --sdist --release --out dist/
+          python -m maturin build --sdist --release --out dist/
       - name: Test install from source distribution
         run: |
           python -m pip -vvv install --user dist/*
