@@ -10,6 +10,8 @@ struct Model {
     inner: omikuji::Model,
     /// Cached thread pool for parallel operations (mirrors Python implementation's self._thread_pool)
     thread_pool: Mutex<rayon::ThreadPool>,
+    /// Cached process ID for fork detection (mirrors Python implementation's self._pid)
+    cached_pid: usize,
 }
 
 #[pymethods]
@@ -35,6 +37,7 @@ impl Model {
         Ok(Model {
             inner: model,
             thread_pool: Mutex::new(pool),
+            cached_pid: std::process::id() as usize,
         })
     }
 
@@ -55,6 +58,7 @@ impl Model {
             })?;
 
         *self.thread_pool.lock().unwrap() = pool;
+        self.cached_pid = std::process::id() as usize;
         Ok(())
     }
 
@@ -73,8 +77,24 @@ impl Model {
         max_sparse_density: f32,
         n_threads: Option<usize>,
     ) -> PyResult<()> {
-        let pool = match n_threads {
-            Some(n) => rayon::ThreadPoolBuilder::new()
+        // Check for fork: rebuild thread pool if PID changed (mirrors Python fork detection)
+        let current_pid = std::process::id() as usize;
+        if current_pid != self.cached_pid {
+            let mut pool = self.thread_pool.lock().unwrap();
+            *pool = rayon::ThreadPoolBuilder::new()
+                .stack_size(32 * 1024 * 1024)
+                .build()
+                .map_err(|e| {
+                    pyo3::exceptions::PyRuntimeError::new_err(format!(
+                        "Failed to create thread pool: {}",
+                        e
+                    ))
+                })?;
+            self.cached_pid = current_pid;
+        }
+
+        if let Some(n) = n_threads {
+            let pool = rayon::ThreadPoolBuilder::new()
                 .num_threads(n)
                 .stack_size(32 * 1024 * 1024)
                 .build()
@@ -83,23 +103,20 @@ impl Model {
                         "Failed to create thread pool: {}",
                         e
                     ))
-                })?,
-            None => {
-                // Reuse the cached thread pool (mirrors Python implementation's self._thread_pool behavior)
-                let guard = self.thread_pool.lock().unwrap();
-                guard.install(|| self.inner.densify_weights(max_sparse_density));
-                return Ok(());
-            }
-        };
-
-        pool.install(|| self.inner.densify_weights(max_sparse_density));
+                })?;
+            pool.install(|| self.inner.densify_weights(max_sparse_density));
+        } else {
+            // Reuse the cached thread pool (mirrors Python implementation's self._thread_pool behavior)
+            let guard = self.thread_pool.lock().unwrap();
+            guard.install(|| self.inner.densify_weights(max_sparse_density));
+        }
         Ok(())
     }
 
     /// Make predictions with Omikuji model.
     #[pyo3(signature = (feature_value_pairs, beam_size=None, top_k=None))]
     fn predict(
-        &self,
+        &mut self,
         _py: Python,
         feature_value_pairs: Vec<(u32, f32)>,
         beam_size: Option<usize>,
@@ -107,6 +124,22 @@ impl Model {
     ) -> PyResult<Vec<(u32, f32)>> {
         let beam_size = beam_size.unwrap_or(10);
         let top_k = top_k.unwrap_or(10);
+
+        // Check for fork: rebuild thread pool if PID changed (mirrors Python fork detection)
+        let current_pid = std::process::id() as usize;
+        if current_pid != self.cached_pid {
+            let mut pool = self.thread_pool.lock().unwrap();
+            *pool = rayon::ThreadPoolBuilder::new()
+                .stack_size(32 * 1024 * 1024)
+                .build()
+                .map_err(|e| {
+                    pyo3::exceptions::PyRuntimeError::new_err(format!(
+                        "Failed to create thread pool: {}",
+                        e
+                    ))
+                })?;
+            self.cached_pid = current_pid;
+        }
 
         // Use the cached thread pool for prediction (same as Python)
         let pool = self.thread_pool.lock().unwrap();
@@ -407,6 +440,7 @@ fn make_model(inner: omikuji::Model) -> PyResult<Model> {
     Ok(Model {
         inner,
         thread_pool: Mutex::new(pool),
+        cached_pid: std::process::id() as usize,
     })
 }
 
