@@ -123,33 +123,33 @@ impl From<LossType> for omikuji::model::liblinear::LossType {
 #[pyclass(from_py_object)]
 #[derive(Clone)]
 struct HyperParam {
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     n_trees: usize,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     min_branch_size: usize,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     max_depth: usize,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     centroid_threshold: f32,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     collapse_every_n_layers: usize,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     linear_loss_type: LossType,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     linear_eps: f32,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     linear_c: f32,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     linear_weight_threshold: f32,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     linear_max_iter: u32,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     cluster_k: usize,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     cluster_balanced: bool,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     cluster_eps: f32,
-    #[pyo3(get)]
+    #[pyo3(get, set)]
     cluster_min_size: usize,
 }
 
