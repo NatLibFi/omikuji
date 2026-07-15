@@ -26,5 +26,5 @@ pdqselect = "0.1.*"
 sprs = { version = "0.9.*", features = ["serde"] }
 const-default = "1.0.*"
 log = "0.4.*"
-pyo3 = { version = "0.22", features = ["extension-module"] }
+pyo3 = { version = "0.29", features = ["extension-module"] }
 omikuji = { path = ".." }
