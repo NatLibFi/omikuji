@@ -76,7 +76,7 @@ jobs:
           python -m black --check ./
       - name: Build source distribution
         run: |
-          maturin build --out dist/
+          maturin build --release --out dist/
       - name: Install Rust (Linux/macOS)
         run: |
           set -e
@@ -159,7 +159,7 @@ jobs:
           cargo -V
       - name: Build wheels with maturin
         run: |
-          "$PYBIN" -m maturin build --interpreter "$PYBIN" --out wheelhouse/
+          "$PYBIN" -m maturin build --release --interpreter "$PYBIN" --out wheelhouse/
       - name: auditwheel repair (manylinux)
         run: |
           set -e -x
@@ -244,7 +244,7 @@ jobs:
         shell: cmd
         run: >-
           "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64
-          && maturin build --interpreter python --out wheelhouse/
+          && maturin build --release --interpreter python --out wheelhouse/
       - name: Test installing wheels and run examples
         shell: bash
         run: |
@@ -318,7 +318,7 @@ jobs:
           cargo -V
       - name: Build wheels with maturin
         run: |
-          python -m maturin build --out wheelhouse/
+          python -m maturin build --release --out wheelhouse/
       - name: Test installing wheels and run examples
         run: |
           set -e -x
