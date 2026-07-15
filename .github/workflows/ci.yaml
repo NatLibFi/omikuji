@@ -318,7 +318,7 @@ jobs:
           cargo -V
       - name: Build wheels with maturin
         run: |
-          python -m maturin build --universal --out wheelhouse/
+          python -m maturin build --out wheelhouse/
       - name: Test installing wheels and run examples
         run: |
           set -e -x
