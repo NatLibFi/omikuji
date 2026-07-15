@@ -20,3 +20,12 @@ from omikuji._omikuji import (
 
 # Re-export for backward compatibility
 __all__ += ["__version__"]
+
+
+# Add classmethods to the PyO3 Model class for backward compatibility with the old API
+Model.default_hyper_param = classmethod(lambda cls: default_hyper_param())
+Model.train_on_data = classmethod(
+    lambda cls, data_path, hyper_param=None, n_threads=None: train_on_data(
+        data_path, hyper_param, n_threads
+    )
+)
