@@ -54,13 +54,16 @@ impl Model {
     }
 
     /// Make predictions with Omikuji model.
+    #[pyo3(signature = (feature_value_pairs, beam_size=None, top_k=None))]
     fn predict(
         &self,
         _py: Python,
         feature_value_pairs: Vec<(u32, f32)>,
-        beam_size: usize,
-        top_k: usize,
+        beam_size: Option<usize>,
+        top_k: Option<usize>,
     ) -> PyResult<Vec<(u32, f32)>> {
+        let beam_size = beam_size.unwrap_or(10);
+        let top_k = top_k.unwrap_or(10);
         let predictions = self.inner.predict(&feature_value_pairs, beam_size);
         let result: Vec<(u32, f32)> = predictions
             .into_iter()
