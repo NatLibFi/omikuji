@@ -29,7 +29,7 @@ impl Model {
     }
 
     /// Densify model weights to speed up prediction at the expense of memory usage.
-    #[pyo3(signature = (max_sparse_density, n_threads=None))]
+    #[pyo3(signature = (max_sparse_density=0.1, n_threads=None))]
     fn densify_weights(
         &mut self,
         max_sparse_density: f32,
