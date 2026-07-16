@@ -187,6 +187,25 @@ impl Model {
     fn n_trees(&self) -> usize {
         self.inner.n_trees()
     }
+
+    /// Get the default training hyper-parameters.
+    #[classmethod]
+    fn default_hyper_param(_cls: &Bound<'_, pyo3::types::PyType>) -> PyResult<HyperParam> {
+        Ok(default_hyper_param())
+    }
+
+    /// Train a model with the given data file path and hyper-parameters.
+    #[classmethod]
+    #[pyo3(signature = (data_path, hyper_param=None, n_threads=None))]
+    fn train_on_data(
+        _cls: &Bound<'_, pyo3::types::PyType>,
+        _py: Python,
+        data_path: String,
+        hyper_param: Option<&HyperParam>,
+        n_threads: Option<usize>,
+    ) -> PyResult<Self> {
+        train_on_data(_py, data_path, hyper_param, n_threads)
+    }
 }
 
 /// Loss type enum for linear classifiers
