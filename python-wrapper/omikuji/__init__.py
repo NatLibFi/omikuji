@@ -18,6 +18,10 @@ from omikuji._omikuji import (
     init_logger,
 )
 
+# Backward-compatible aliases for the old LossType member names
+LossType.HINGE = LossType.Hinge
+LossType.LOG = LossType.Log
+
 # Re-export for backward compatibility
 __all__ += ["__version__"]
 
