@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use omikuji::rayon;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -118,12 +119,34 @@ impl Model {
     fn predict(
         &mut self,
         _py: Python,
-        feature_value_pairs: Vec<(u32, f32)>,
+        mut feature_value_pairs: Vec<(u32, f32)>,
         beam_size: Option<usize>,
         top_k: Option<usize>,
     ) -> PyResult<Vec<(u32, f32)>> {
         let beam_size = beam_size.unwrap_or(10);
         let top_k = top_k.unwrap_or(10);
+
+        // Sort by feature index (mirrors Python implementation's behavior)
+        feature_value_pairs.sort_by_key(|&(f, _)| f);
+
+        // Validate indices are strictly ascending and in range (mirrors Python implementation's behavior)
+        let n_features = self.n_features();
+        if !feature_value_pairs.is_empty() {
+            for ((f1, _), (f2, _)) in feature_value_pairs.iter().tuple_windows() {
+                if !(*f1 < *f2) {
+                    return Err(pyo3::exceptions::PyValueError::new_err(
+                        "Feature indices must be strictly ascending",
+                    ));
+                }
+            }
+            let (first, _) = &feature_value_pairs[0];
+            let (last, _) = &feature_value_pairs[feature_value_pairs.len() - 1];
+            if *first >= n_features as u32 || *last >= n_features as u32 {
+                return Err(pyo3::exceptions::PyValueError::new_err(
+                    "Feature index out of range",
+                ));
+            }
+        }
 
         // Check for fork: rebuild thread pool if PID changed (mirrors Python fork detection)
         let current_pid = std::process::id() as usize;
