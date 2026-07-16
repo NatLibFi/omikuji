@@ -257,6 +257,10 @@ struct HyperParam {
     cluster_eps: f32,
     #[pyo3(get, set)]
     cluster_min_size: usize,
+    #[pyo3(get, set)]
+    tree_structure_only: bool,
+    #[pyo3(get, set)]
+    train_trees_1_by_1: bool,
 }
 
 #[pymethods]
@@ -277,6 +281,8 @@ impl HyperParam {
         cluster_balanced=None,
         cluster_eps=None,
         cluster_min_size=None,
+        tree_structure_only=false,
+        train_trees_1_by_1=false,
         **kwargs
     ))]
     fn new(
@@ -294,6 +300,8 @@ impl HyperParam {
         cluster_balanced: Option<bool>,
         cluster_eps: Option<f32>,
         cluster_min_size: Option<usize>,
+        tree_structure_only: bool,
+        train_trees_1_by_1: bool,
         kwargs: Option<&Bound<'_, PyDict>>,
     ) -> PyResult<Self> {
         let default = omikuji::model::train::HyperParam::default();
@@ -315,6 +323,8 @@ impl HyperParam {
             cluster_balanced: cluster_balanced.unwrap_or(default.cluster.balanced),
             cluster_eps: cluster_eps.unwrap_or(default.cluster.eps),
             cluster_min_size: cluster_min_size.unwrap_or(default.cluster.min_size),
+            tree_structure_only,
+            train_trees_1_by_1,
         };
 
         // Allow dict-style passing for linear and cluster sub-params
@@ -417,8 +427,8 @@ fn hyper_param_to_native(hp: &HyperParam) -> omikuji::model::train::HyperParam {
             eps: hp.cluster_eps,
             min_size: hp.cluster_min_size,
         },
-        tree_structure_only: false,
-        train_trees_1_by_1: false,
+        tree_structure_only: hp.tree_structure_only,
+        train_trees_1_by_1: hp.train_trees_1_by_1,
     }
 }
 
@@ -441,6 +451,8 @@ fn default_hyper_param() -> HyperParam {
         cluster_balanced: default.cluster.balanced,
         cluster_eps: default.cluster.eps,
         cluster_min_size: default.cluster.min_size,
+        tree_structure_only: default.tree_structure_only,
+        train_trees_1_by_1: default.train_trees_1_by_1,
     }
 }
 
