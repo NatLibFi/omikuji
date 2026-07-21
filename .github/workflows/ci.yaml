@@ -95,6 +95,7 @@ jobs:
         with:
           name: ${{ github.job }}-${{ env.PYTHON_VERSION }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
+          retention-days: 1
 
   python-manylinux:
     runs-on: ubuntu-latest
@@ -174,6 +175,7 @@ jobs:
         with:
           name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
+          retention-days: 1
 
   python-windows:
     runs-on: windows-2022
@@ -244,6 +246,7 @@ jobs:
         with:
           name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
+          retention-days: 1
 
   python-macos:
     runs-on: macos-15
@@ -314,3 +317,4 @@ jobs:
         with:
           name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
           path: dist/
+          retention-days: 1
