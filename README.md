@@ -3,6 +3,8 @@
 
 An efficient implementation of Partitioned Label Trees (Prabhu et al., 2018) and its variations for extreme multi-label classification, written in Rust🦀 with love💖.
 
+Omikuji was originally created by [tomtung](https://github.com/tomtung/), who is also the primary author of the codebase.
+
 ## Features & Performance
 
 Omikuji has has been tested on datasets from the [Extreme Classification Repository](http://manikvarma.org/downloads/XC/XMLRepository.html). All tests below are run on a quad-core Intel® Core™ i7-6700 CPU, and we allowed as many cores to be utilized as possible. We measured training time, and calculated precisions at 1, 3, and 5. (Note that, due to randomness, results might vary from run to run, especially for smaller datasets.)
