@@ -31,6 +31,8 @@ setup(
     version="0.5.1",
     author="Tom Dong",
     author_email="tom.tung.dyb@gmail.com",
+    maintainer="Juho Inkinen, Osma Suominen",
+    maintainer_email="juho.inkinen@helsinki.fi, osma.suominen@helsinki.fi",
     description=(
         "Python binding to Omikuji, an efficient implementation of Partioned Label "
         "Trees and its variations for extreme multi-label classification"
