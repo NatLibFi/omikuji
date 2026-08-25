@@ -2,7 +2,9 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ['*']
+    # Only run CI (and thus only trigger the release workflow) for
+    # semver-style tags like v0.5.1.
+    tags: ['v[0-9]*']
   pull_request:
   workflow_dispatch:
 
