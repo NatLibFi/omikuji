@@ -42,10 +42,12 @@ def build_native(spec):
             c_api_dir, "target", "aarch64-apple-darwin", "release", "libomikuji.dylib"
         )
         fat_lib = path.join(c_api_dir, "target", "release", "libomikuji.dylib")
+        os.makedirs(path.dirname(fat_lib), exist_ok=True)
 
         subprocess.run(
             ["lipo", "-create", "-output", fat_lib, lib_x86, lib_arm],
             check=True,
+            cwd=c_api_dir,
         )
 
         # Use a no-op command for milksnake since we've already built everything
