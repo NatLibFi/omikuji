@@ -30,7 +30,6 @@ jobs:
         run: |
           rustup -V
           rustup component list --installed
-          rustc -Vv
           cargo -V
       - name: Cargo test
         run: |
@@ -58,18 +57,10 @@ jobs:
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Query Python version
-        run: |
-          set -e -x
-          which python
-          python -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         run: |
           set -e -x
-          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
-          python -m pip --version
-          python -m wheel version
-          python -m twine --version
+          python -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
       - name: Check Python code format
         run: |
           python -m pip install --user black
@@ -86,15 +77,15 @@ jobs:
         run: |
           rustup -V
           rustup component list --installed
-          rustc -Vv
           cargo -V
       - name: Test install from source distribution
         run: |
-          python -m pip -vvv install --user dist/*
+          python -m pip install --user dist/*
       - name: Check artifacts with twine
         run: |
           set -e -x
-          python -m twine check dist/*
+          pip install "twine>=7.0.0"
+          python -m twine check dist/* --strict
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -124,18 +115,10 @@ jobs:
             3.14) PYBIN=/opt/python/cp314-cp314/bin/python ;;
           esac
           echo "PYBIN=$PYBIN" >> $GITHUB_ENV
-      - name: Query Python version
-        run: |
-          set -e -x
-          which "$PYBIN"
-          "$PYBIN" -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         run: |
           set -e -x
-          "$PYBIN" -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
-          "$PYBIN" -m pip --version
-          "$PYBIN" -m wheel version
-          "$PYBIN" -m twine --version
+          "$PYBIN" -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
       - name: Install Rust (Linux/macOS)
         run: |
           set -e
@@ -145,11 +128,10 @@ jobs:
         run: |
           rustup -V
           rustup component list --installed
-          rustc -Vv
           cargo -V
       - name: Build wheels
         run: |
-          "$PYBIN" -m pip -vvv wheel . -w wheelhouse/
+          "$PYBIN" -m pip wheel . -w wheelhouse/
       - name: auditwheel repair (manylinux)
         run: |
           set -e -x
@@ -165,16 +147,11 @@ jobs:
           "$PYBIN" -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
           "$PYBIN" run_py.py
-          "$PYBIN" -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish (manylinux)
         run: |
           set -e -x
           mkdir -p dist
           cp wheelhouse/${{ env.package_name }}*manylinux*.whl dist/
-      - name: Check artifacts with twine
-        run: |
-          set -e -x
-          "$PYBIN" -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -193,19 +170,11 @@ jobs:
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Query Python version
-        shell: bash
-        run: |
-          set -e -x
-          python -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         shell: bash
         run: |
           set -e -x
-          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
-          python -m pip --version
-          python -m wheel version
-          python -m twine --version
+          python -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
       - name: Install Rust (Windows)
         shell: bash
         run: |
@@ -218,13 +187,12 @@ jobs:
         run: |
           rustup -V
           rustup component list --installed
-          rustc -Vv
           cargo -V
       - name: Build wheels
         shell: cmd
         run: >-
           "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64
-          && python -m pip -vvv wheel . -w wheelhouse/
+          && python -m pip wheel . -w wheelhouse/
       - name: Test installing wheels and run examples
         shell: bash
         run: |
@@ -234,18 +202,12 @@ jobs:
           python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
           python run_py.py
-          python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
         shell: bash
         run: |
           set -e -x
           mkdir -p dist
           cp wheelhouse/${{ env.package_name }}*.whl dist/
-      - name: Check artifacts with twine
-        shell: bash
-        run: |
-          set -e -x
-          python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -266,18 +228,10 @@ jobs:
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Query Python version
-        run: |
-          set -e -x
-          which python
-          python -c "import sys; print(sys.version)"
       - name: Install dev dependencies
         run: |
           set -e -x
-          python -m pip -vvv install --user --upgrade pip wheel "setuptools>=38.6.0" twine "milksnake>=0.1.6"
-          python -m pip --version
-          python -m wheel version
-          python -m twine --version
+          python -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
       - name: Install Rust (Linux/macOS)
         run: |
           set -e
@@ -287,16 +241,14 @@ jobs:
         run: |
           rustup -V
           rustup component list --installed
-          rustc -Vv
           cargo -V
       - name: Build wheels
         run: |
-          python -m pip -vvv wheel . -w wheelhouse/
+          python -m pip wheel . -w wheelhouse/
       - name: Delocate wheels (macOS)
         run: |
           set -e -x
           python -m pip install delocate
-          delocate-wheel --version
           delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
           ls -lh wheelhouse/
       - name: Test installing wheels and run examples
@@ -307,16 +259,11 @@ jobs:
           python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
           python run_py.py
-          python -m pip uninstall -y ${{ env.package_name }}
       - name: Prepare wheels for publish
         run: |
           set -e -x
           mkdir -p dist
           cp wheelhouse/${{ env.package_name }}*.whl dist/
-      - name: Check artifacts with twine
-        run: |
-          set -e -x
-          python -m twine check dist/*
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -343,7 +290,7 @@ jobs:
           merge-multiple: true
       - name: Check artifacts with twine
         run: |
-          pip install twine
-          python -m twine check dist/*
+          pip install "twine>=7.0.0"
+          python -m twine check dist/* --strict
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
