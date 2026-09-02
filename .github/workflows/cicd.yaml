@@ -265,7 +265,7 @@ jobs:
         run: |
           set -e -x
           arch -x86_64 python -m venv /tmp/venv-x64
-          arch -x86_64 /tmp/venv-x64/bin/pip install ${{ env.package_name }} --no-index -f wheelhouse/
+          arch -x86_64 /tmp/venv-x64/bin/pip install ./wheelhouse/${{ env.package_name }}-*.whl
           arch -x86_64 /tmp/venv-x64/bin/python -c "import ${{ env.package_name }}; print(${{ env.package_name }}.__version__)"
       - name: Prepare wheels for publish
         run: |
