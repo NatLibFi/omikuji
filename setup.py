@@ -12,14 +12,7 @@ if sys.platform in ["win32", "cygwin"]:
 def build_native(spec):
     c_api_dir = path.abspath(path.join(path.dirname(__file__), "c-api"))
 
-    if sys.platform == "darwin":
-        # Build universal2 fat binary for both x86_64 and arm64
-        subprocess.run(
-            ["rustup", "target", "add", "x86_64-apple-darwin", "aarch64-apple-darwin"],
-            check=True,
-            cwd=c_api_dir,
-        )
-
+    if sys.platform == "darwin" and os.environ.get("OMIKUJI_UNIVERSAL2") == "1":
         # Build for x86_64
         subprocess.run(
             ["cargo", "build", "--release", "--target", "x86_64-apple-darwin"],

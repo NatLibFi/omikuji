@@ -221,6 +221,7 @@ jobs:
       SYSTEM_VERSION_COMPAT: 0
       MACOSX_DEPLOYMENT_TARGET: '11.0'
       _PYTHON_HOST_PLATFORM: macosx-11.0-universal2
+      OMIKUJI_UNIVERSAL2: '1'
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
@@ -239,6 +240,8 @@ jobs:
           set -e
           curl https://sh.rustup.rs -sSf | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Provision Rust cross targets
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
       - name: Query Rust and Cargo versions
         run: |
           rustup -V
