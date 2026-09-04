@@ -4,10 +4,6 @@ import os
 import subprocess
 import sys
 
-# https://stackoverflow.com/a/65622116 ¯\_(ツ)_/¯
-if sys.platform in ["win32", "cygwin"]:
-    os.environ["DISTUTILS_USE_SDK"] = "1"
-
 
 # milksnake 0.1.6 uses distutils.sysconfig.get_config_var('SHLIB_SUFFIX') to
 # build the library name inside the wheel.  On Windows this var is None,
