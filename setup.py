@@ -23,6 +23,7 @@ if sys.platform in ("win32", "cygwin"):
         return _orig_get_config_var(name)
 
     import distutils.sysconfig as _sysconfig
+
     _orig_get_config_var = _sysconfig.get_config_var
     _sysconfig.get_config_var = _patched_get_config_var
 
