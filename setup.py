@@ -9,6 +9,24 @@ if sys.platform in ["win32", "cygwin"]:
     os.environ["DISTUTILS_USE_SDK"] = "1"
 
 
+# milksnake 0.1.6 uses distutils.sysconfig.get_config_var('SHLIB_SUFFIX') to
+# build the library name inside the wheel.  On Windows this var is None,
+# producing the literal name '_libomikuji__libNone' (no .dll extension),
+# which cffi's dlopen / LoadLibraryEx cannot resolve.  Patch it so the
+# generated wrapper dlopens a proper '_libomikuji__lib.dll'.
+if sys.platform in ("win32", "cygwin"):
+    _orig_get_config_var = None
+
+    def _patched_get_config_var(name):
+        if name == "SHLIB_SUFFIX":
+            return ".dll"
+        return _orig_get_config_var(name)
+
+    import distutils.sysconfig as _sysconfig
+    _orig_get_config_var = _sysconfig.get_config_var
+    _sysconfig.get_config_var = _patched_get_config_var
+
+
 def build_native(spec):
     c_api_dir = path.abspath(path.join(path.dirname(__file__), "c-api"))
 

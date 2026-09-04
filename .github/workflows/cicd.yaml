@@ -193,19 +193,12 @@ jobs:
         run: >-
           "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64
           && python -m pip wheel . -w wheelhouse/
-      - name: "Debug: inspect wheel contents"
-        shell: bash
-        run: |
-          set -e -x
-          unzip -l wheelhouse/${{ env.package_name }}-*.whl
-          unzip -p wheelhouse/${{ env.package_name }}-*.whl omikuji/_libomikuji.py || true
       - name: Test installing wheels and run examples
         shell: bash
         run: |
           set -e -x
           ls -lh wheelhouse/
           python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
-          python -c "import os,site; d=os.path.join(site.getusersitepackages(),'omikuji'); print('installed dir:', d, 'exists:', os.path.isdir(d)); [print(f) for f in sorted(os.listdir(d))] if os.path.isdir(d) else None"
           python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
           cd examples
           python run_py.py
