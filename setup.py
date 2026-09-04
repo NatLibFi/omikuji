@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 
-
 # milksnake 0.1.6 uses distutils.sysconfig.get_config_var('SHLIB_SUFFIX') to
 # build the library name inside the wheel.  On Windows this var is None,
 # producing the literal name '_libomikuji__libNone' (no .dll extension),
