@@ -31,6 +31,8 @@ setup(
     version="0.5.1",
     author="Tom Dong",
     author_email="tom.tung.dyb@gmail.com",
+    maintainer="Juho Inkinen, Osma Suominen",
+    maintainer_email="juho.inkinen@helsinki.fi, osma.suominen@helsinki.fi",
     description=(
         "Python binding to Omikuji, an efficient implementation of Partioned Label "
         "Trees and its variations for extreme multi-label classification"
@@ -38,7 +40,7 @@ setup(
     long_description=load_readme(),
     long_description_content_type="text/markdown",
     python_requires=">=3.8",
-    url="https://github.com/tomtung/omikuji",
+    url="https://github.com/NatLibFi/omikuji",
     license="MIT",
     packages=["omikuji"],
     package_dir={"": "python-wrapper"},
