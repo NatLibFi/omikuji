@@ -3,7 +3,7 @@
 
 An efficient implementation of Partitioned Label Trees (Prabhu et al., 2018) and its variations for extreme multi-label classification, written in Rust🦀 with love💖.
 
-Omikuji was originally created by [tomtung](https://github.com/tomtung/), who is also the primary author of the codebase.
+Omikuji was originally created by [tomtung](https://github.com/tomtung/), who is also the primary author of the codebase. Since August 2026, the codebase is maintained by the National Library of Finland for use with tools such as [Annif](https://annif.org).
 
 ## Features & Performance
 
