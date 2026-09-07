@@ -1,0 +1,307 @@
+name: CICD
+on:
+  push:
+    branches: [main]
+    # Only run CI (and thus only trigger the release workflow) for
+    # semver-style tags like v0.5.1.
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  package_name: omikuji
+
+jobs:
+  rust-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+      - name: Install Rust
+        run: |
+          set -e
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+      - name: Query Rust and Cargo versions
+        run: |
+          rustup -V
+          rustup component list --installed
+          cargo -V
+      - name: Cargo test
+        run: |
+          set -e -x
+          cargo fmt --all -- --check
+          cargo test --features cli
+          cd c-api
+          cargo fmt --all -- --check
+          cargo test
+      - name: Run example
+        run: |
+          set -e -x
+          cargo install --path . --features cli --locked
+          omikuji --help
+          cd examples
+          bash run_cli.sh
+
+  python-sdist:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: '3.14'
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+      - name: Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dev dependencies
+        run: |
+          set -e -x
+          python -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
+      - name: Check Python code format
+        run: |
+          python -m pip install --user black
+          python -m black --check ./
+      - name: Build source distribution
+        run: |
+          python setup.py sdist
+      - name: Install Rust (Linux/macOS)
+        run: |
+          set -e
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Query Rust and Cargo versions
+        run: |
+          rustup -V
+          rustup component list --installed
+          cargo -V
+      - name: Test install from source distribution
+        run: |
+          python -m pip install --user dist/*
+      - name: Check artifacts with twine
+        run: |
+          set -e -x
+          pip install "twine>=7.0.0"
+          python -m twine check dist/* --strict
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ github.job }}-${{ env.PYTHON_VERSION }}-${{ runner.OS }}-${{ runner.Arch }}
+          path: dist/
+          retention-days: 1
+
+  python-manylinux:
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:latest
+    env:
+      manylinux: true
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+      - name: Set PYBIN for manylinux Python
+        # The manylinux pypa image has multiple Python versions installed in non-standard locations,
+        # so we need to set PYBIN accordingly for the rest of the steps.
+        run: |
+          case ${{ matrix.python-version }} in
+            3.10) PYBIN=/opt/python/cp310-cp310/bin/python ;;
+            3.11) PYBIN=/opt/python/cp311-cp311/bin/python ;;
+            3.12) PYBIN=/opt/python/cp312-cp312/bin/python ;;
+            3.13) PYBIN=/opt/python/cp313-cp313/bin/python ;;
+            3.14) PYBIN=/opt/python/cp314-cp314/bin/python ;;
+          esac
+          echo "PYBIN=$PYBIN" >> $GITHUB_ENV
+      - name: Install dev dependencies
+        run: |
+          set -e -x
+          "$PYBIN" -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
+      - name: Install Rust (Linux/macOS)
+        run: |
+          set -e
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Query Rust and Cargo versions
+        run: |
+          rustup -V
+          rustup component list --installed
+          cargo -V
+      - name: Build wheels
+        run: |
+          "$PYBIN" -m pip wheel . -w wheelhouse/
+      - name: auditwheel repair (manylinux)
+        run: |
+          set -e -x
+          for whl in wheelhouse/${{ env.package_name }}-*.whl; do
+            auditwheel repair "$whl" -w wheelhouse/
+          done
+          ls -lh wheelhouse/
+      - name: Test installing wheels and run examples
+        run: |
+          set -e -x
+          ls -lh wheelhouse/
+          "$PYBIN" -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
+          "$PYBIN" -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          cd examples
+          "$PYBIN" run_py.py
+      - name: Prepare wheels for publish (manylinux)
+        run: |
+          set -e -x
+          mkdir -p dist
+          cp wheelhouse/${{ env.package_name }}*manylinux*.whl dist/
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
+          path: dist/
+          retention-days: 1
+
+  python-windows:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+      - name: Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dev dependencies
+        shell: bash
+        run: |
+          set -e -x
+          python -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
+      - name: Install Rust (Windows)
+        shell: bash
+        run: |
+          set -e
+          curl -sSf -o rustup-init.exe https://win.rustup.rs
+          ./rustup-init.exe -y
+          echo "$USERPROFILE/.cargo/bin" >> $GITHUB_PATH
+      - name: Query Rust and Cargo versions
+        shell: bash
+        run: |
+          rustup -V
+          rustup component list --installed
+          cargo -V
+      - name: Build wheels
+        shell: cmd
+        run: >-
+          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64
+          && python -m pip wheel . -w wheelhouse/
+      - name: Test installing wheels and run examples
+        shell: bash
+        run: |
+          set -e -x
+          ls -lh wheelhouse/
+          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
+          python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          cd examples
+          python run_py.py
+      - name: Prepare wheels for publish
+        shell: bash
+        run: |
+          set -e -x
+          mkdir -p dist
+          cp wheelhouse/${{ env.package_name }}*.whl dist/
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
+          path: dist/
+          retention-days: 1
+
+  python-macos:
+    runs-on: macos-15
+    env:
+      SYSTEM_VERSION_COMPAT: 0
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+      _PYTHON_HOST_PLATFORM: macosx-11.0-universal2
+      OMIKUJI_UNIVERSAL2: '1'
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+      - name: Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # v6.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dev dependencies
+        run: |
+          set -e -x
+          python -m pip install --user --upgrade pip wheel "setuptools>=38.6.0" "milksnake>=0.1.6"
+      - name: Install Rust (Linux/macOS)
+        run: |
+          set -e
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Provision Rust cross targets
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+      - name: Query Rust and Cargo versions
+        run: |
+          rustup -V
+          rustup component list --installed
+          cargo -V
+      - name: Build wheels
+        run: |
+          python -m pip wheel . -w wheelhouse/
+      - name: Delocate wheels (macOS)
+        run: |
+          set -e -x
+          python -m pip install delocate
+          delocate-wheel --require-archs universal2 wheelhouse/${{ env.package_name }}-*.whl
+          ls -lh wheelhouse/
+      - name: Test installing wheels and run examples
+        run: |
+          set -e -x
+          ls -lh wheelhouse/
+          python -m pip install ${{ env.package_name }} --no-index -f wheelhouse/ --user
+          python -c "import sys; sys.path.remove(''); import ${{ env.package_name }}; print('Installed version: ' + ${{ env.package_name }}.__version__)"
+          cd examples
+          python run_py.py
+      - name: Verify wheel installs under x86_64 (Rosetta)
+        run: |
+          set -e -x
+          arch -x86_64 python -m venv /tmp/venv-x64
+          arch -x86_64 /tmp/venv-x64/bin/pip install ./wheelhouse/${{ env.package_name }}-*.whl
+          arch -x86_64 /tmp/venv-x64/bin/python -c "import ${{ env.package_name }}; print(${{ env.package_name }}.__version__)"
+      - name: Prepare wheels for publish
+        run: |
+          set -e -x
+          mkdir -p dist
+          cp wheelhouse/${{ env.package_name }}*.whl dist/
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ github.job }}-${{ matrix.python-version }}-${{ runner.OS }}-${{ runner.Arch }}
+          path: dist/
+          retention-days: 1
+
+  publish-to-pypi:
+    needs: [rust-build, python-sdist, python-manylinux, python-windows, python-macos]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/omikuji/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          pattern: 'python-*'
+          path: dist/
+          merge-multiple: true
+      - name: Check artifacts with twine
+        run: |
+          pip install "twine>=7.0.0"
+          python -m twine check dist/* --strict
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2

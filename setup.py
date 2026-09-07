@@ -1,15 +1,68 @@
 from setuptools import setup
 from os import path
+import os
+import subprocess
 import sys
 
+# milksnake 0.1.6 uses distutils.sysconfig.get_config_var('SHLIB_SUFFIX') to
+# build the library name inside the wheel.  On Windows this var is None,
+# producing the literal name '_libomikuji__libNone' (no .dll extension),
+# which cffi's dlopen / LoadLibraryEx cannot resolve.  Patch it so the
+# generated wrapper dlopens a proper '_libomikuji__lib.dll'.
+if sys.platform in ("win32", "cygwin"):
+    _orig_get_config_var = None
 
-# https://stackoverflow.com/a/65622116 ¯\_(ツ)_/¯
-if sys.platform in ["win32", "cygwin"]:
-    os.environ["DISTUTILS_USE_SDK"] = "1"
+    def _patched_get_config_var(name):
+        if name == "SHLIB_SUFFIX":
+            return ".dll"
+        return _orig_get_config_var(name)
+
+    import distutils.sysconfig as _sysconfig
+
+    _orig_get_config_var = _sysconfig.get_config_var
+    _sysconfig.get_config_var = _patched_get_config_var
 
 
 def build_native(spec):
-    build = spec.add_external_build(cmd=["cargo", "build", "--release"], path="c-api")
+    c_api_dir = path.abspath(path.join(path.dirname(__file__), "c-api"))
+
+    if sys.platform == "darwin" and os.environ.get("OMIKUJI_UNIVERSAL2") == "1":
+        # Build for x86_64
+        subprocess.run(
+            ["cargo", "build", "--release", "--target", "x86_64-apple-darwin"],
+            check=True,
+            cwd=c_api_dir,
+        )
+
+        # Build for arm64
+        subprocess.run(
+            ["cargo", "build", "--release", "--target", "aarch64-apple-darwin"],
+            check=True,
+            cwd=c_api_dir,
+        )
+
+        # Combine with lipo into a fat binary
+        lib_x86 = path.join(
+            c_api_dir, "target", "x86_64-apple-darwin", "release", "libomikuji.dylib"
+        )
+        lib_arm = path.join(
+            c_api_dir, "target", "aarch64-apple-darwin", "release", "libomikuji.dylib"
+        )
+        fat_lib = path.join(c_api_dir, "target", "release", "libomikuji.dylib")
+        os.makedirs(path.dirname(fat_lib), exist_ok=True)
+
+        subprocess.run(
+            ["lipo", "-create", "-output", fat_lib, lib_x86, lib_arm],
+            check=True,
+            cwd=c_api_dir,
+        )
+
+        # Use a no-op command for milksnake since we've already built everything
+        build_cmd = ["echo", "universal2 fat binary already built"]
+    else:
+        build_cmd = ["cargo", "build", "--release"]
+
+    build = spec.add_external_build(cmd=build_cmd, path="c-api")
     spec.add_cffi_module(
         module_path="omikuji._libomikuji",
         dylib=lambda: build.find_dylib("omikuji", in_path="target/release"),
@@ -57,6 +110,8 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Rust",
         "License :: OSI Approved :: MIT License",
