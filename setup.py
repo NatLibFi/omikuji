@@ -81,7 +81,7 @@ def load_readme():
 
 setup(
     name="omikuji",
-    version="0.5.1",
+    version="0.5.2",
     author="Tom Dong",
     author_email="tom.tung.dyb@gmail.com",
     maintainer="Juho Inkinen, Osma Suominen",

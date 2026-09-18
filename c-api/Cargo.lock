@@ -427,7 +427,7 @@ dependencies = [
 
 [[package]]
 name = "omikuji"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "const-default",
  "hashbrown 0.14.2",
@@ -449,7 +449,7 @@ dependencies = [
 
 [[package]]
 name = "omikuji_c-api"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "cbindgen",
  "itertools",
